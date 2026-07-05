@@ -97,4 +97,29 @@ object OccurrenceEngine {
 
         TaskType.SOMEDAY -> null
     }
+
+    /**
+     * Meter-based maintenance (acceptance test #3, car oil): due when EITHER the time-based
+     * occurrence has arrived OR the meter threshold has been crossed — never meter-only, since a
+     * task with meter fields set can still have an earlier time-based due date (e.g. the 12-month
+     * service interval firing before 10,000 km is reached).
+     *
+     * [latestMeterValue] is the most recent MeterReading for this task's meter (queried by the
+     * caller; engine has no DB access). Null (no reading yet) means the meter leg is never due.
+     */
+    fun isDue(
+        schedule: TaskSchedule,
+        zone: ZoneId,
+        now: ZonedDateTime,
+        createdAt: ZonedDateTime,
+        lastDoneAt: ZonedDateTime? = null,
+        latestMeterValue: Double? = null
+    ): Boolean {
+        val timeOccurrence = nextOccurrence(schedule, zone, now, createdAt, lastDoneAt)
+        val lastDoneMeter = schedule.lastDoneMeter
+        val meterInterval = schedule.meterInterval
+        val meterDue = latestMeterValue != null && lastDoneMeter != null && meterInterval != null &&
+            MeterEngine.isMeterDue(latestMeterValue, lastDoneMeter, meterInterval)
+        return MeterEngine.isDue(timeOccurrence, now, meterDue)
+    }
 }

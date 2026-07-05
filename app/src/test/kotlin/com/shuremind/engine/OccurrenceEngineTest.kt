@@ -157,4 +157,75 @@ class OccurrenceEngineTest {
         val schedule = TaskSchedule(type = TaskType.RECURRING, recFreq = RecurrenceFrequency.DAILY, recAnchor = null)
         assertNull(OccurrenceEngine.nextOccurrence(schedule, zone, now, createdAt))
     }
+
+    // --- Acceptance test #3: car oil, RECURRING COMPLETION 12 months + meter every 10,000 km ---
+
+    private val carOilSchedule = TaskSchedule(
+        type = TaskType.RECURRING,
+        recAnchor = RecurrenceAnchor.COMPLETION,
+        recFreq = RecurrenceFrequency.MONTHLY,
+        recInterval = 12,
+        meterInterval = 10_000.0,
+        lastDoneMeter = 50_000.0
+    )
+    private val lastDoneAt: ZonedDateTime = ZonedDateTime.of(2026, 1, 1, 9, 0, 0, 0, zone)
+
+    @Test
+    fun `isDue is true when only the meter threshold is crossed, time not yet due`() {
+        val result = OccurrenceEngine.isDue(
+            schedule = carOilSchedule,
+            zone = zone,
+            now = now, // well within the 12-month window
+            createdAt = createdAt,
+            lastDoneAt = lastDoneAt,
+            latestMeterValue = 61_000.0 // 11,000 km since last done, over the 10,000 interval
+        )
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `isDue is true when only the time interval is due, meter not yet due`() {
+        val result = OccurrenceEngine.isDue(
+            schedule = carOilSchedule,
+            zone = zone,
+            now = ZonedDateTime.of(2027, 2, 1, 9, 0, 0, 0, zone), // over 12 months since lastDoneAt
+            createdAt = createdAt,
+            lastDoneAt = lastDoneAt,
+            latestMeterValue = 55_000.0 // only 5,000 km, under the 10,000 interval
+        )
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `isDue is false when neither time nor meter threshold is crossed`() {
+        val result = OccurrenceEngine.isDue(
+            schedule = carOilSchedule,
+            zone = zone,
+            now = now,
+            createdAt = createdAt,
+            lastDoneAt = lastDoneAt,
+            latestMeterValue = 55_000.0
+        )
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun `isDue never treats a task as due from the meter alone when meter fields are missing`() {
+        val schedule = TaskSchedule(
+            type = TaskType.RECURRING,
+            recAnchor = RecurrenceAnchor.COMPLETION,
+            recFreq = RecurrenceFrequency.MONTHLY,
+            recInterval = 12
+            // no meterInterval / lastDoneMeter set
+        )
+        val result = OccurrenceEngine.isDue(
+            schedule = schedule,
+            zone = zone,
+            now = now,
+            createdAt = createdAt,
+            lastDoneAt = lastDoneAt,
+            latestMeterValue = 999_999.0 // huge reading, must be ignored without meter fields
+        )
+        assertEquals(false, result)
+    }
 }

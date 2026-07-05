@@ -24,5 +24,7 @@ data class TaskSchedule(
     val stockQty: Double? = null,
     val dosePerIntake: Double? = null,
     val restockLeadDays: Int? = null,
-    val stockRecordedAt: LocalDate? = null
+    val stockRecordedAt: LocalDate? = null,
+    val meterInterval: Double? = null,
+    val lastDoneMeter: Double? = null
 )

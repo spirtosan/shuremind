@@ -25,3 +25,30 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
 - **D-22** Dependency rulings under D-16 from M2: androidx.compose.material:material-icons-core is approved (first-party Compose family, needed for Material icons in Compose UI); navigation-compose is NOT used — navigation is a manual sealed-interface Screen + BackHandler in MainActivity, sufficient for a 3-screen app. Revisit only if screen count grows materially. (2026-07-05)
 - **D-23** Missed-fire detection via a single global delivered watermark (DataStore last_handled_at), advanced only after notifications post; fires in (watermark, now] surface as the overdue summary at boot/open/housekeeping. Failure mode is duplicate delivery, never loss. (2026-07-05)
 - **D-24** Notification Snooze action applies one app-wide default snooze duration (initial 1h, configurable in Settings); no duration chooser on notifications; per-task snooze override deferred to v2+. (2026-07-05)
+- **D-25** WINDOW→DEADLINE conversion: a "Date learned" action on WINDOW
+  detail sets type=DEADLINE + due date/time, clears all rec_* fields and
+  window_hint, replaces ReminderRules with the settings defaults for
+  DEADLINE, in one transaction. (2026-07-05)
+- **D-26** CONSUMABLE remaining stock is always derived:
+  max(0, stock_qty − dose×intakes/day×days since stock_recorded_at).
+  Restock sets stock_qty = remaining + bought and stock_recorded_at =
+  today (per D-19). Entry points: detail Restock button + a Restock
+  notification action that deep-links into detail with the dialog
+  pre-opened. (2026-07-05)
+- **D-27** First MeterReading for a meter_name seeds a monthly
+  "log your <meter> reading" RECURRING task; idempotent via a DataStore
+  string-set, never re-seeded even after user deletion. Meter-due
+  (OR-logic) surfaces in the list's Overdue section at read time only —
+  it produces no alarm instant and is NOT fed into the D-23
+  watermark/overdue-summary notification, because it is a continuous
+  condition, not a missed instant. (2026-07-05)
+- **D-28** Weekly review screen = SOMEDAY (all) + stale (ACTIVE, overdue
+  ≥7 days) + all ACTIVE WINDOW tasks. Entry: main-list button + a seeded
+  "Weekly review" RECURRING task (weekly, SU 18:00), idempotent via
+  DataStore; the seeded task's id is stored in DataStore (not a schema
+  column) and its notification tap routes to the review screen instead
+  of task detail. (2026-07-05)
+- **D-29** material-icons-core ships only ~50 icons. Icon choices must
+  stay within that set (verified: Archive/Speed/EventNote absent; used
+  AutoMirrored ExitToApp, AutoMirrored List, DateRange instead). Do not
+  add material-icons-extended without explicit approval. (2026-07-05)

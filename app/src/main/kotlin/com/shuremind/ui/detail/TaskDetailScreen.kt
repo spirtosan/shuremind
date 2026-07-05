@@ -61,12 +61,13 @@ import java.time.LocalTime
 fun TaskDetailScreen(
     taskId: String,
     viewModel: TaskDetailViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    autoOpenRestock: Boolean = false
 ) {
     val state by viewModel.uiState.collectAsState()
     val locale = currentLocale()
 
-    LaunchedEffect(taskId) { viewModel.load(taskId) }
+    LaunchedEffect(taskId, autoOpenRestock) { viewModel.load(taskId, autoOpenRestock) }
     LaunchedEffect(state.justSaved, state.justDeleted) {
         if (state.justSaved || state.justDeleted) onBack()
     }
@@ -260,6 +261,31 @@ fun TaskDetailScreen(
                             .fillMaxWidth()
                             .padding(top = 8.dp)
                     )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                    SectionTitle(R.string.detail_section_date_learned)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        TextButton(onClick = { datePickerTarget = DetailDateField.DATE_LEARNED }) {
+                            Text(
+                                state.dateLearnedDate?.let { formatLocalDate(LocalDate.parse(it), locale) }
+                                    ?: stringResource(R.string.detail_date_learned_pick)
+                            )
+                        }
+                        TextButton(
+                            onClick = { timePickerTarget = DetailTimeField.DATE_LEARNED },
+                            enabled = state.dateLearnedDate != null
+                        ) {
+                            Text(
+                                state.dateLearnedTime?.let { formatLocalTime(LocalTime.parse(it), locale) }
+                                    ?: stringResource(R.string.field_due_time)
+                            )
+                        }
+                    }
+                    TextButton(
+                        onClick = viewModel::convertWindowToDeadline,
+                        enabled = state.dateLearnedDate != null
+                    ) {
+                        Text(stringResource(R.string.detail_convert_to_deadline))
+                    }
                 }
 
                 if (state.type == TaskType.RECURRING) {
@@ -349,6 +375,21 @@ fun TaskDetailScreen(
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
+                state.remainingStock?.let { remaining ->
+                    Text(
+                        stringResource(R.string.field_remaining_stock_value, remaining),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+                state.runOutDate?.let {
+                    Text(
+                        stringResource(R.string.field_run_out_date_value, formatLocalDate(LocalDate.parse(it), locale)),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+                TextButton(onClick = viewModel::openRestockDialog, modifier = Modifier.padding(top = 8.dp)) {
+                    Text(stringResource(R.string.detail_restock_action))
+                }
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
@@ -407,6 +448,7 @@ fun TaskDetailScreen(
             DetailDateField.DUE -> state.dueLocalDate?.let(LocalDate::parse)
             DetailDateField.NOT_BEFORE -> state.notBefore?.let(LocalDate::parse)
             DetailDateField.REC_END -> state.recEndDate?.let(LocalDate::parse)
+            DetailDateField.DATE_LEARNED -> state.dateLearnedDate?.let(LocalDate::parse)
         }
         AppDatePickerDialog(
             initial = initial,
@@ -416,25 +458,71 @@ fun TaskDetailScreen(
                     DetailDateField.DUE -> viewModel.setDueLocalDate(date.toString())
                     DetailDateField.NOT_BEFORE -> viewModel.setNotBefore(date.toString())
                     DetailDateField.REC_END -> viewModel.setRecEndDate(date.toString())
+                    DetailDateField.DATE_LEARNED -> viewModel.setDateLearnedDate(date.toString())
                 }
             }
         )
     }
     timePickerTarget?.let { target ->
+        val initial = when (target) {
+            DetailTimeField.DUE -> state.dueLocalTime?.let(LocalTime::parse)
+            DetailTimeField.DATE_LEARNED -> state.dateLearnedTime?.let(LocalTime::parse)
+        }
         AppTimePickerDialog(
-            initial = state.dueLocalTime?.let(LocalTime::parse),
+            initial = initial,
             onDismiss = { timePickerTarget = null },
             onConfirm = { time ->
                 when (target) {
                     DetailTimeField.DUE -> viewModel.setDueLocalTime(time.toString())
+                    DetailTimeField.DATE_LEARNED -> viewModel.setDateLearnedTime(time.toString())
                 }
             }
         )
     }
+
+    if (state.showRestockDialog) {
+        RestockDialog(
+            boughtQuantity = state.boughtQuantity,
+            onBoughtQuantityChange = viewModel::setBoughtQuantity,
+            onDismiss = viewModel::dismissRestockDialog,
+            onConfirm = viewModel::confirmRestock
+        )
+    }
 }
 
-private enum class DetailDateField { DUE, NOT_BEFORE, REC_END }
-private enum class DetailTimeField { DUE }
+private enum class DetailDateField { DUE, NOT_BEFORE, REC_END, DATE_LEARNED }
+private enum class DetailTimeField { DUE, DATE_LEARNED }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RestockDialog(
+    boughtQuantity: String,
+    onBoughtQuantityChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.detail_restock_dialog_title)) },
+        text = {
+            OutlinedTextField(
+                value = boughtQuantity,
+                onValueChange = onBoughtQuantityChange,
+                label = { Text(stringResource(R.string.detail_restock_dialog_hint)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(); onDismiss() }, enabled = boughtQuantity.toDoubleOrNull() != null) {
+                Text(stringResource(R.string.detail_save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.detail_delete_confirm_cancel)) }
+        }
+    )
+}
 
 @Composable
 private fun SectionTitle(res: Int, topPadding: androidx.compose.ui.unit.Dp = 0.dp) {

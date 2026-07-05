@@ -5,5 +5,5 @@ import com.shuremind.engine.FireInstantEngine.GlobalFire
 
 /** Posts one actionable (Done/Snooze/+Skip) notification per due occurrence. Implemented in full in M3 STEP 6. */
 fun interface OccurrenceNotifier {
-    fun postOccurrenceNotification(task: TaskEntity, fire: GlobalFire)
+    suspend fun postOccurrenceNotification(task: TaskEntity, fire: GlobalFire)
 }

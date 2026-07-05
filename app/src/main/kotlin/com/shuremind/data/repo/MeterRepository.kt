@@ -12,4 +12,7 @@ class MeterRepository internal constructor(private val meterReadingDao: MeterRea
     suspend fun getLatest(meterName: String): MeterReadingEntity? = meterReadingDao.getLatest(meterName)
 
     fun observeForMeter(meterName: String): Flow<List<MeterReadingEntity>> = meterReadingDao.observeForMeter(meterName)
+
+    /** All readings across every meter, grouped by name (newest first within each), for the Meter readings screen (D-27). */
+    fun observeAll(): Flow<List<MeterReadingEntity>> = meterReadingDao.observeAll()
 }

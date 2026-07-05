@@ -6,19 +6,25 @@ import androidx.room.Room
 import com.shuremind.data.AppDatabase
 import com.shuremind.data.repo.CompletionRepository
 import com.shuremind.data.repo.DataStoreDeliveryWatermarkRepository
+import com.shuremind.data.repo.DataStoreMeterSeedRepository
 import com.shuremind.data.repo.DataStoreSettingsRepository
+import com.shuremind.data.repo.DataStoreWeeklyReviewSeedRepository
 import com.shuremind.data.repo.DeliveryWatermarkRepository
 import com.shuremind.data.repo.LanguageRepository
 import com.shuremind.data.repo.MeterRepository
+import com.shuremind.data.repo.MeterSeedRepository
 import com.shuremind.data.repo.ReminderRuleRepository
 import com.shuremind.data.repo.RoomCompletionRepository
 import com.shuremind.data.repo.RoomReminderRuleRepository
 import com.shuremind.data.repo.RoomTagRepository
 import com.shuremind.data.repo.RoomTaskRepository
+import com.shuremind.data.repo.RoomWindowConversionRepository
 import com.shuremind.data.repo.ScheduleChangeNotifier
 import com.shuremind.data.repo.SettingsRepository
 import com.shuremind.data.repo.TagRepository
 import com.shuremind.data.repo.TaskRepository
+import com.shuremind.data.repo.WeeklyReviewSeedRepository
+import com.shuremind.data.repo.WindowConversionRepository
 import com.shuremind.system.AlarmArmer
 import com.shuremind.system.AlarmScheduler
 import com.shuremind.system.NotificationCenter
@@ -52,14 +58,21 @@ class AppContainer(context: Context) {
     val meterRepository: MeterRepository = MeterRepository(database.meterReadingDao())
     val tagRepository: TagRepository = RoomTagRepository(database.tagDao(), database.taskTagDao())
     val reminderRuleRepository: ReminderRuleRepository = RoomReminderRuleRepository(database.reminderRuleDao())
+    val windowConversionRepository: WindowConversionRepository = RoomWindowConversionRepository(
+        database, database.taskDao(), database.reminderRuleDao(), scheduleChangeNotifier
+    )
     val settingsRepository: SettingsRepository =
         DataStoreSettingsRepository(context.applicationContext.settingsDataStore, scheduleChangeNotifier)
     val languageRepository: LanguageRepository = LanguageRepository()
     val deliveryWatermarkRepository: DeliveryWatermarkRepository =
         DataStoreDeliveryWatermarkRepository(context.applicationContext.settingsDataStore)
+    val meterSeedRepository: MeterSeedRepository = DataStoreMeterSeedRepository(context.applicationContext.settingsDataStore)
+    val weeklyReviewSeedRepository: WeeklyReviewSeedRepository =
+        DataStoreWeeklyReviewSeedRepository(context.applicationContext.settingsDataStore)
 
     private val alarmArmer: AlarmArmer = AlarmScheduler(context.applicationContext)
-    val notificationCenter: NotificationCenter = NotificationCenter(context.applicationContext)
+    val notificationCenter: NotificationCenter =
+        NotificationCenter(context.applicationContext, weeklyReviewSeedRepository = weeklyReviewSeedRepository)
 
     /** M3 (D-07/D-10/D-23) single entry point — see [RecomputeAndRearm]'s own kdoc for call sites. */
     val recomputeAndRearm: RecomputeAndRearm = RecomputeAndRearm(

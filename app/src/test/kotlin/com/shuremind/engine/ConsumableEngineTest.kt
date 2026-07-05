@@ -71,6 +71,31 @@ class ConsumableEngineTest {
         assertEquals(LocalDate.of(2026, 6, 13), result.toLocalDate())
     }
 
+    // --- D-26: remainingStock (restock flow) ---
+
+    @Test
+    fun `remainingStock subtracts consumption since stockRecordedAt`() {
+        val stockRecordedAt = LocalDate.of(2026, 6, 1)
+        val today = LocalDate.of(2026, 6, 6) // 5 days elapsed, 2 per day = 10 consumed
+        val remaining = ConsumableEngine.remainingStock(stockRecordedAt, stockQty = 30.0, dosePerIntake = 1.0, intakesPerDay = 2, today = today)
+        assertEquals(20.0, remaining, 0.0)
+    }
+
+    @Test
+    fun `remainingStock clamps at zero once past run-out`() {
+        val stockRecordedAt = LocalDate.of(2026, 6, 1)
+        val today = LocalDate.of(2026, 7, 1) // well past the 15-day run-out
+        val remaining = ConsumableEngine.remainingStock(stockRecordedAt, stockQty = 30.0, dosePerIntake = 1.0, intakesPerDay = 2, today = today)
+        assertEquals(0.0, remaining, 0.0)
+    }
+
+    @Test
+    fun `remainingStock on the recorded day itself equals the recorded quantity`() {
+        val stockRecordedAt = LocalDate.of(2026, 6, 1)
+        val remaining = ConsumableEngine.remainingStock(stockRecordedAt, stockQty = 30.0, dosePerIntake = 1.0, intakesPerDay = 2, today = stockRecordedAt)
+        assertEquals(30.0, remaining, 0.0)
+    }
+
     @Test
     fun `next occurrence stays fixed between recomputes as now advances, given the same stock reading`() {
         val stockRecordedAt = LocalDate.of(2026, 6, 1)

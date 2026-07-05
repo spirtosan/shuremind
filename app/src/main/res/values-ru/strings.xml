@@ -175,4 +175,38 @@
         <item quantity="many">%d просроченных напоминаний</item>
         <item quantity="other">%d просроченных напоминания</item>
     </plurals>
+
+    <!-- M4: WINDOW -> DEADLINE conversion (D-25) -->
+    <string name="detail_section_date_learned">Дата стала известна</string>
+    <string name="detail_date_learned_pick">Выбрать дату</string>
+    <string name="detail_convert_to_deadline">Преобразовать в крайний срок</string>
+
+    <!-- M4: CONSUMABLE restock (D-26) -->
+    <string name="field_remaining_stock_value">Остаток: %1$.1f</string>
+    <string name="field_run_out_date_value">Закончится: %1$s</string>
+    <string name="detail_restock_action">Пополнить запас</string>
+    <string name="detail_restock_dialog_title">Сколько вы купили?</string>
+    <string name="detail_restock_dialog_hint">Количество</string>
+
+    <!-- M4: main list entry points -->
+    <string name="action_meter_readings">Показания счётчика</string>
+    <string name="action_weekly_review">Еженедельный обзор</string>
+
+    <!-- M4: Meter readings screen (D-27) -->
+    <string name="meter_readings_title">Показания счётчика</string>
+    <string name="meter_name_hint">Название счётчика</string>
+    <string name="meter_value_hint">Значение</string>
+    <string name="meter_add_reading">Добавить показание</string>
+    <string name="meter_empty">Показаний пока нет</string>
+    <string name="meter_task_delta_value">%1$s — %2$s с последнего выполнения</string>
+    <string name="meter_seed_task_title">Внесите показание %1$s</string>
+
+    <!-- M4: Weekly review screen (D-28) -->
+    <string name="weekly_review_title">Еженедельный обзор</string>
+    <string name="weekly_review_section_someday">Когда-нибудь</string>
+    <string name="weekly_review_section_stale">Застоявшиеся</string>
+    <string name="weekly_review_section_windows">Окна</string>
+    <string name="weekly_review_empty">Нечего просматривать</string>
+    <string name="weekly_review_archive">В архив</string>
+    <string name="weekly_review_task_title">Еженедельный обзор</string>
 </resources>

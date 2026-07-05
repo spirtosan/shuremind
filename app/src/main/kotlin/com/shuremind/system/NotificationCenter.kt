@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import com.shuremind.R
 import com.shuremind.data.entity.TaskEntity
 import com.shuremind.data.repo.RECURRING_TYPES
+import com.shuremind.data.repo.WeeklyReviewSeedRepository
 import com.shuremind.engine.FireInstantEngine.GlobalFire
 import com.shuremind.engine.TaskType
 import com.shuremind.ui.MainActivity
@@ -24,17 +25,23 @@ import java.time.ZoneId
  * POST_NOTIFICATIONS granted, posting is a silent no-op — the app keeps working, just quieter,
  * per the graceful-degradation philosophy in D-17 (permission onboarding covers asking for it).
  */
-class NotificationCenter(private val context: Context, private val zone: ZoneId = ZoneId.systemDefault()) :
-    OccurrenceNotifier, OverdueSummaryNotifier {
+class NotificationCenter(
+    private val context: Context,
+    private val weeklyReviewSeedRepository: WeeklyReviewSeedRepository,
+    private val zone: ZoneId = ZoneId.systemDefault()
+) : OccurrenceNotifier, OverdueSummaryNotifier {
 
     // hasNotificationPermission() below performs the real check; suppressed because lint can't see
     // through the helper method call to recognize it as an equivalent guard.
     @SuppressLint("MissingPermission")
-    override fun postOccurrenceNotification(task: TaskEntity, fire: GlobalFire) {
+    override suspend fun postOccurrenceNotification(task: TaskEntity, fire: GlobalFire) {
         if (!hasNotificationPermission()) return
         val notificationId = occurrenceNotificationId(task.id, fire.occurrenceLocal)
         val channel = if (task.type == TaskType.NAG) NotificationChannels.NAG else NotificationChannels.REMINDERS
         val locale = context.resources.configuration.locales[0]
+        // D-28: the seeded weekly-review task's own notification tap opens the review screen, not
+        // its (otherwise unremarkable) task detail — recognized by stored task id, not by type/title.
+        val isWeeklyReviewTask = weeklyReviewSeedRepository.seededTaskId() == task.id
 
         val builder = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notification)
@@ -42,13 +49,21 @@ class NotificationCenter(private val context: Context, private val zone: ZoneId 
             .setContentText(formatEpochMillis(fire.at.toInstant().toEpochMilli(), zone, locale))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
-            .setContentIntent(taskDetailPendingIntent(task.id, notificationId))
+            .setContentIntent(
+                if (isWeeklyReviewTask) weeklyReviewPendingIntent(notificationId) else taskDetailPendingIntent(task.id, notificationId)
+            )
             .addAction(actionCompat(R.string.action_done, NotificationActionReceiver.ACTION_DONE, task.id, fire.occurrenceLocal, notificationId, 0))
 
         if (task.type in RECURRING_TYPES) {
             builder.addAction(actionCompat(R.string.action_skip, NotificationActionReceiver.ACTION_SKIP, task.id, fire.occurrenceLocal, notificationId, 1))
         }
         builder.addAction(actionCompat(R.string.action_snooze, NotificationActionReceiver.ACTION_SNOOZE, task.id, fire.occurrenceLocal, notificationId, 2))
+
+        // D-26: CONSUMABLE run-out reminders get a Restock action that opens task detail with the
+        // restock dialog pre-opened (singleTop/onNewIntent, no trampoline — same pattern as EXTRA_TASK_ID).
+        if (task.type == TaskType.CONSUMABLE) {
+            builder.addAction(restockActionCompat(task.id, notificationId))
+        }
 
         NotificationManagerCompat.from(context).notify(notificationId, builder.build())
     }
@@ -78,6 +93,23 @@ class NotificationCenter(private val context: Context, private val zone: ZoneId 
             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             .putExtra(MainActivity.EXTRA_TASK_ID, taskId)
         return PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+
+    private fun weeklyReviewPendingIntent(notificationId: Int): PendingIntent {
+        val intent = Intent(context, MainActivity::class.java)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            .putExtra(MainActivity.EXTRA_OPEN_WEEKLY_REVIEW, true)
+        return PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+
+    private fun restockActionCompat(taskId: String, notificationId: Int): NotificationCompat.Action {
+        val intent = Intent(context, MainActivity::class.java)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            .putExtra(MainActivity.EXTRA_TASK_ID, taskId)
+            .putExtra(MainActivity.EXTRA_OPEN_RESTOCK, true)
+        val requestCode = notificationId * 4 + 3
+        val pendingIntent = PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        return NotificationCompat.Action.Builder(R.drawable.ic_notification, context.getString(R.string.detail_restock_action), pendingIntent).build()
     }
 
     private fun actionCompat(

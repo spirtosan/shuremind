@@ -1,16 +1,23 @@
 package com.shuremind.testutil
 
+import com.shuremind.data.dao.MeterReadingDao
 import com.shuremind.data.entity.CompletionLogEntity
+import com.shuremind.data.entity.MeterReadingEntity
 import com.shuremind.data.entity.ReminderRuleEntity
 import com.shuremind.data.entity.TagEntity
 import com.shuremind.data.entity.TaskEntity
 import com.shuremind.data.repo.AppSettings
 import com.shuremind.data.repo.CompletionRepository
 import com.shuremind.data.repo.DeliveryWatermarkRepository
+import com.shuremind.data.repo.MeterRepository
+import com.shuremind.data.repo.MeterSeedRepository
+import com.shuremind.data.repo.NextFireAtCalculator
 import com.shuremind.data.repo.ReminderRuleRepository
 import com.shuremind.data.repo.SettingsRepository
 import com.shuremind.data.repo.TagRepository
 import com.shuremind.data.repo.TaskRepository
+import com.shuremind.data.repo.WeeklyReviewSeedRepository
+import com.shuremind.data.repo.WindowConversionRepository
 import com.shuremind.engine.CompletionAction
 import com.shuremind.engine.TaskStatus
 import com.shuremind.engine.TaskType
@@ -21,6 +28,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -35,7 +44,10 @@ fun fixtureTask(
     nextFireAt: Long? = null,
     snoozedUntil: Long? = null,
     createdAt: Long = 0L,
-    deletedAt: Long? = null
+    deletedAt: Long? = null,
+    meterName: String? = null,
+    meterInterval: Double? = null,
+    lastDoneMeter: Double? = null
 ): TaskEntity = TaskEntity(
     id = id,
     title = title,
@@ -60,9 +72,9 @@ fun fixtureTask(
     dosePerIntake = null,
     restockLeadDays = null,
     stockRecordedAt = null,
-    meterName = null,
-    meterInterval = null,
-    lastDoneMeter = null,
+    meterName = meterName,
+    meterInterval = meterInterval,
+    lastDoneMeter = lastDoneMeter,
     windowHint = null,
     snoozedUntil = snoozedUntil,
     nextFireAt = nextFireAt,
@@ -202,6 +214,44 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     }
 }
 
+/** D-25: mirrors RoomWindowConversionRepository's field-level behavior over the in-memory fakes. */
+class FakeWindowConversionRepository(
+    private val taskRepository: FakeTaskRepository,
+    private val reminderRuleRepository: FakeReminderRuleRepository,
+    private val zone: ZoneId = ZoneId.systemDefault()
+) : WindowConversionRepository {
+
+    override suspend fun convertWindowToDeadline(
+        taskId: String,
+        dueLocalDate: LocalDate,
+        dueLocalTime: LocalTime?,
+        defaultReminderOffsets: List<String>,
+        now: Long
+    ): TaskEntity? {
+        val existing = taskRepository.getById(taskId) ?: return null
+        val converted = existing.copy(
+            type = TaskType.DEADLINE,
+            dueLocalDate = dueLocalDate.toString(),
+            dueLocalTime = dueLocalTime?.toString(),
+            recFreq = null,
+            recInterval = 1,
+            recAnchor = null,
+            recDaysOfWeek = null,
+            recDayOfMonth = null,
+            recTimesOfDay = null,
+            recEndDate = null,
+            windowHint = null,
+            updatedAt = now,
+            dirty = 1
+        )
+        val nowZdt = Instant.ofEpochMilli(now).atZone(zone)
+        val withNextFire = converted.copy(nextFireAt = NextFireAtCalculator.compute(converted, zone, nowZdt, lastDoneAt = null))
+        taskRepository.update(withNextFire, now)
+        reminderRuleRepository.setForTask(taskId, defaultReminderOffsets)
+        return withNextFire
+    }
+}
+
 class FakeDeliveryWatermarkRepository(initial: Long = 0L) : DeliveryWatermarkRepository {
     private var value: Long = initial
 
@@ -210,6 +260,43 @@ class FakeDeliveryWatermarkRepository(initial: Long = 0L) : DeliveryWatermarkRep
     override suspend fun advanceTo(instant: Long) {
         value = instant
     }
+}
+
+class FakeMeterReadingDao(initial: List<MeterReadingEntity> = emptyList()) : MeterReadingDao {
+    private val state = MutableStateFlow(initial)
+
+    override suspend fun insert(reading: MeterReadingEntity) {
+        state.update { it + reading }
+    }
+
+    override suspend fun getLatest(meterName: String): MeterReadingEntity? =
+        state.value.filter { it.meterName == meterName }.maxByOrNull { it.recordedAt }
+
+    override fun observeForMeter(meterName: String): Flow<List<MeterReadingEntity>> =
+        state.map { list -> list.filter { it.meterName == meterName }.sortedByDescending { it.recordedAt } }
+
+    override fun observeAll(): Flow<List<MeterReadingEntity>> =
+        state.map { list -> list.sortedWith(compareBy<MeterReadingEntity> { it.meterName }.thenByDescending { it.recordedAt }) }
+}
+
+/** Test seam: MeterRepository's constructor is `internal`, reachable from src/test via Kotlin friend paths. */
+fun fakeMeterRepository(readings: List<MeterReadingEntity> = emptyList()): MeterRepository =
+    MeterRepository(FakeMeterReadingDao(readings))
+
+class FakeMeterSeedRepository(initialSeeded: Set<String> = emptySet()) : MeterSeedRepository {
+    private val seeded = initialSeeded.toMutableSet()
+    override suspend fun isSeeded(meterName: String): Boolean = meterName in seeded
+    override suspend fun markSeeded(meterName: String) {
+        seeded += meterName
+    }
+}
+
+class FakeWeeklyReviewSeedRepository(private var taskId: String? = null) : WeeklyReviewSeedRepository {
+    override suspend fun isSeeded(): Boolean = taskId != null
+    override suspend fun markSeeded(taskId: String) {
+        this.taskId = taskId
+    }
+    override suspend fun seededTaskId(): String? = taskId
 }
 
 class FakeReminderRuleRepository(initial: Map<String, List<String>> = emptyMap()) : ReminderRuleRepository {

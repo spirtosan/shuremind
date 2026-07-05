@@ -36,10 +36,18 @@ data class TaskDetailUiState(
     val dosePerIntake: String = "",
     val restockLeadDays: String = "",
     val stockRecordedAt: String? = null,
+    /** D-26: computed at read time, shown alongside the editable stock fields — never edited directly. */
+    val remainingStock: Double? = null,
+    val runOutDate: String? = null,
+    val boughtQuantity: String = "",
+    val showRestockDialog: Boolean = false,
     val meterName: String = "",
     val meterInterval: String = "",
     val lastDoneMeter: String = "",
     val windowHint: String = "",
+    /** D-25: pending "date learned" input for WINDOW -> DEADLINE conversion; unrelated to dueLocalDate/Time. */
+    val dateLearnedDate: String? = null,
+    val dateLearnedTime: String? = null,
     val reminderOffsets: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     val tagInput: String = "",

@@ -7,8 +7,11 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: **M3 complete → ready for M4 (advanced behaviors)**
-- Next concrete step: M4 with Claude Code — WINDOW date-learned conversion, CONSUMABLE restock flow, meter readings screen + monthly km prompt, weekly review screen (SOMEDAY + stale items). Deadline escalation curve already shipped in M3 (moved up, see PROJECT.md).
+- Phase: **M4 complete → ready for M5 (import/export + auto-backup +
+  polish)**
+- Next concrete step: M5 with Claude Code — versioned full-fidelity
+  JSON export/import (replace-all, D-11), daily auto-backup to
+  user-picked folder keeping last 7, Settings rows for backup go live.
 - Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
 - Open questions: final app/package name (placeholder `com.shuremind`); confirm minSdk 26 on both target phones; app has no launcher icon resource yet (pre-existing gap, not M3 scope).
 
@@ -50,3 +53,28 @@ _Project memory across chat sessions._
 - Added `androidx.work:work-runtime-ktx` (already in the D-16 approved stack, first actual use).
 - Result: 120 tests green (82 + 38), assembleDebug clean, lintDebug clean bar the pre-existing local.properties path issue.
 - Next: M4.
+- Addendum (post-session, commit 9236e28): RecomputeAndRearm concurrency
+  fix — tryLock no longer drops concurrent triggers; a rerunRequested
+  flag loops the recompute instead. +1 test (121 green at that point).
+
+## Session 5 — 2026-07-06 (Fable planning + Claude Code, M4)
+- Planning ratified D-25..D-28 (WINDOW conversion, restock flow, meter
+  seeding/surfacing, weekly review; review reminder SU 18:00 confirmed).
+- Claude Code executed M4: WindowConversionRepository (transactional
+  type flip + rule replacement), ConsumableEngine.remainingStock +
+  restock dialog/notification action (deep-link via intent extras,
+  singleTop path), meter readings screen + first-use monthly-prompt
+  seeding (DataStore idempotency), meter-due OR-logic surfacing in the
+  Overdue list section (read-time only, no alarm instant — Session 2
+  note honored), weekly review screen (SOMEDAY/stale≥7d/WINDOW) +
+  seeded weekly task with tap-through routing, en/bg/ru strings.
+- Three uncovered decisions surfaced by Claude Code and ratified in
+  planning: meter-due stays out of the watermark summary (folded into
+  D-27), weekly-review task id in DataStore (folded into D-28), icons
+  ruling (→ D-29).
+- Result: 35 files (20 modified, 15 new), 139 tests, assembleDebug
+  clean, lint clean bar the known local.properties issue.
+- Found: RecomputeAndRearmTest used real wall-clock time, failing
+  whenever run during quiet hours (~21:00–08:00) — fixed this session
+  by pinning the test clock (see below).
+- Next: M5 (import/export, auto-backup, polish).

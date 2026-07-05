@@ -328,6 +328,39 @@ class FireInstantEngineTest {
     }
 
     @Test
+    fun `D-26 restock replaces the daily follow-up chain with a fresh lead-time reminder`() {
+        // Same stale chain as above (reminder was June 11; June 13 10:00 is mid-nag, chain landing on
+        // June 14 09:00 next). The user restocks on June 13: stock_qty and stock_recorded_at both
+        // change, so the run-out/lead math resets from that new reading instead of continuing the
+        // old daily-nag chain.
+        val beforeRestock = TaskFireInput(
+            taskId = "meds",
+            schedule = TaskSchedule(
+                type = TaskType.CONSUMABLE,
+                stockQty = 30.0,
+                dosePerIntake = 1.0,
+                restockLeadDays = 5,
+                recTimesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                stockRecordedAt = LocalDate.of(2026, 6, 1)
+            ),
+            createdAt = createdAt
+        )
+        val now = ZonedDateTime.of(2026, 6, 13, 10, 0, 0, 0, zone)
+        val stillNagging = FireInstantEngine.computeNextFire(beforeRestock, zone, now, settings)
+        assertEquals(FireInstantEngine.FireReason.OCCURRENCE, stillNagging?.reason)
+        assertEquals(ZonedDateTime.of(2026, 6, 14, 9, 0, 0, 0, zone), stillNagging?.at) // still mid-nag before restock
+
+        val afterRestock = beforeRestock.copy(
+            schedule = beforeRestock.schedule.copy(stockQty = 30.0, stockRecordedAt = LocalDate.of(2026, 6, 13))
+        )
+        val fresh = FireInstantEngine.computeNextFire(afterRestock, zone, now, settings)
+
+        // New run-out = June 13 + floor(30/2) = June 28; lead reminder = June 28 - 5 = June 23 — no
+        // longer a daily nag, and no trace of the pre-restock missed chain leaks into the new instant.
+        assertEquals(ZonedDateTime.of(2026, 6, 23, 9, 0, 0, 0, zone), fresh?.at)
+    }
+
+    @Test
     fun `missedSince recovers a missed snooze that expired while the device was off`() {
         val input = TaskFireInput(
             taskId = "t1",

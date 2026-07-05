@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,7 +35,9 @@ import com.shuremind.data.entity.TaskEntity
 fun MainScreen(
     viewModel: MainViewModel,
     onOpenSettings: () -> Unit,
-    onOpenTask: (String) -> Unit
+    onOpenTask: (String) -> Unit,
+    onOpenMeterReadings: () -> Unit,
+    onOpenWeeklyReview: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val capture by viewModel.capture.collectAsState()
@@ -43,6 +47,12 @@ fun MainScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton(onClick = onOpenMeterReadings) {
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.action_meter_readings))
+                    }
+                    IconButton(onClick = onOpenWeeklyReview) {
+                        Icon(Icons.Filled.DateRange, contentDescription = stringResource(R.string.action_weekly_review))
+                    }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.action_settings))
                     }

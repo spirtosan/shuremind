@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shuremind.data.entity.TaskEntity
 import com.shuremind.data.repo.CompletionRepository
+import com.shuremind.data.repo.MeterRepository
 import com.shuremind.data.repo.NextFireAtCalculator
 import com.shuremind.data.repo.SettingsRepository
 import com.shuremind.data.repo.TagRepository
 import com.shuremind.data.repo.TaskRepository
 import com.shuremind.engine.CompletionAction
+import com.shuremind.engine.MeterEngine
 import com.shuremind.engine.PriorityEngine
 import com.shuremind.engine.TaskStatus
 import com.shuremind.engine.TaskType
@@ -28,11 +30,20 @@ class MainViewModel(
     private val completionRepository: CompletionRepository,
     private val tagRepository: TagRepository,
     private val settingsRepository: SettingsRepository,
+    private val meterRepository: MeterRepository,
     private val zone: ZoneId = ZoneId.systemDefault(),
     private val nowProvider: () -> Long = System::currentTimeMillis
 ) : ViewModel() {
 
     private val selectedTagId = MutableStateFlow<String?>(null)
+
+    private data class Sources(
+        val tasks: List<TaskEntity>,
+        val tagMap: Map<String, List<com.shuremind.data.entity.TagEntity>>,
+        val allTags: List<com.shuremind.data.entity.TagEntity>,
+        val snoozePresetsMinutes: List<Long>,
+        val selectedTag: String?
+    )
 
     val uiState: StateFlow<MainUiState> = combine(
         taskRepository.observeActive(),
@@ -41,7 +52,11 @@ class MainViewModel(
         settingsRepository.settings,
         selectedTagId
     ) { tasks, tagMap, allTags, settings, selectedTag ->
-        buildUiState(tasks, tagMap, allTags, settings.snoozePresets.map { it.toMinutes() }, selectedTag)
+        Sources(tasks, tagMap, allTags, settings.snoozePresets.map { it.toMinutes() }, selectedTag)
+    }.combine(meterRepository.observeAll()) { sources, meterReadings ->
+        val latestMeterValues = meterReadings.groupBy { it.meterName }
+            .mapValues { (_, readings) -> readings.maxBy { it.recordedAt }.value }
+        buildUiState(sources.tasks, sources.tagMap, sources.allTags, sources.snoozePresetsMinutes, sources.selectedTag, latestMeterValues)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState())
 
     private val _capture = MutableStateFlow(QuickCaptureState())
@@ -52,7 +67,8 @@ class MainViewModel(
         tagMap: Map<String, List<com.shuremind.data.entity.TagEntity>>,
         allTags: List<com.shuremind.data.entity.TagEntity>,
         snoozePresetsMinutes: List<Long>,
-        selectedTag: String?
+        selectedTag: String?,
+        latestMeterValues: Map<String, Double>
     ): MainUiState {
         val now = nowProvider()
         val nowZdt = Instant.ofEpochMilli(now).atZone(zone)
@@ -69,11 +85,20 @@ class MainViewModel(
             val tags = tagMap[task.id].orEmpty()
             val isSnoozedActive = task.snoozedUntil != null && task.snoozedUntil > now
             val nextFireAt = task.nextFireAt
-            if (task.type == TaskType.SOMEDAY || nextFireAt == null) {
+            // D-27: meter-due (km-since-last-done OR-logic) surfaces in Overdue at read time even
+            // when the task's own time-based next_fire_at hasn't arrived yet — no alarm instant is
+            // ever created for this (by design, Session 2 note); this is purely a list-placement check.
+            val meterDue = isMeterDue(task, latestMeterValues)
+            if (task.type == TaskType.SOMEDAY || (nextFireAt == null && !meterDue)) {
                 someday += TaskListItem(task, tags, score = null, isSnoozedActive = isSnoozedActive)
                 continue
             }
-            val dueDate = Instant.ofEpochMilli(nextFireAt).atZone(zone).toLocalDate()
+            if (meterDue) {
+                val score = PriorityEngine.computeScore(task.impact, task.urgency, daysToDue = -1)
+                overdue += TaskListItem(task, tags, score, isSnoozedActive)
+                continue
+            }
+            val dueDate = Instant.ofEpochMilli(nextFireAt!!).atZone(zone).toLocalDate()
             val daysToDue = ChronoUnit.DAYS.between(today, dueDate)
             val score = PriorityEngine.computeScore(task.impact, task.urgency, daysToDue)
             val item = TaskListItem(task, tags, score, isSnoozedActive)
@@ -96,6 +121,14 @@ class MainViewModel(
             selectedTagId = selectedTag,
             snoozePresetsMinutes = snoozePresetsMinutes
         )
+    }
+
+    private fun isMeterDue(task: TaskEntity, latestMeterValues: Map<String, Double>): Boolean {
+        val meterName = task.meterName ?: return false
+        val latest = latestMeterValues[meterName] ?: return false
+        val lastDone = task.lastDoneMeter ?: return false
+        val interval = task.meterInterval ?: return false
+        return MeterEngine.isMeterDue(latest, lastDone, interval)
     }
 
     fun selectTag(tagId: String?) {

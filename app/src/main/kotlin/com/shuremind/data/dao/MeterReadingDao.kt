@@ -17,4 +17,7 @@ internal interface MeterReadingDao {
 
     @Query("SELECT * FROM meter_readings WHERE meter_name = :meterName ORDER BY recorded_at DESC")
     fun observeForMeter(meterName: String): Flow<List<MeterReadingEntity>>
+
+    @Query("SELECT * FROM meter_readings ORDER BY meter_name ASC, recorded_at DESC")
+    fun observeAll(): Flow<List<MeterReadingEntity>>
 }

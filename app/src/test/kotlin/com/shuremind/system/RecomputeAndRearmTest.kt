@@ -28,7 +28,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 
 class RecomputeAndRearmTest {
 
@@ -214,9 +213,10 @@ class RecomputeAndRearmTest {
 
     @Test
     fun `a write arriving while a pass is in flight triggers a rerun that picks it up`() = runTest {
-        // Real wall-clock "now" (not a fixed calendar date): the rerun uses a fresh now internally,
-        // so due dates here are anchored relative to it rather than to an arbitrary fixed instant.
-        val testNow = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.MINUTES)
+        // Fixed daytime instant (not real wall-clock): urgentDue below is derived from this, so
+        // pinning it keeps urgentDue's clock-of-day out of quiet hours (22:00-08:00) no matter when
+        // this test actually runs — mirrors the fixed ZonedDateTimes in FireInstantEngineTest.
+        val testNow = ZonedDateTime.of(2026, 7, 7, 12, 0, 0, 0, zone)
         val farTask = fixtureTask("far", type = TaskType.EVENT)
             .copy(
                 dueLocalDate = testNow.plusDays(60).toLocalDate().toString(),
@@ -227,7 +227,7 @@ class RecomputeAndRearmTest {
         val recomputeAndRearm = useCase(taskRepository, alarmArmer = armer)
 
         // Start a pass; it reads (and gates on) the task list before the "concurrent" write below.
-        val firstPass = launch { recomputeAndRearm.run() }
+        val firstPass = launch { recomputeAndRearm.run(testNow) }
         advanceUntilIdle()
 
         // Arrives while the first pass is stuck mid-read, due sooner than the far task.
@@ -235,7 +235,7 @@ class RecomputeAndRearmTest {
         val urgentTask = fixtureTask("urgent", type = TaskType.EVENT)
             .copy(dueLocalDate = urgentDue.toLocalDate().toString(), dueLocalTime = urgentDue.toLocalTime().toString())
         taskRepository.upsert(urgentTask)
-        recomputeAndRearm.run() // tryLock fails (first pass still holds it) -> flags a rerun, returns immediately
+        recomputeAndRearm.run(testNow) // tryLock fails (first pass still holds it) -> flags a rerun, returns immediately
 
         taskRepository.gate.complete(Unit) // release the first pass
         firstPass.join()

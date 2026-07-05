@@ -9,10 +9,12 @@ import com.shuremind.data.repo.ReminderRuleRepository
 import com.shuremind.data.repo.SettingsRepository
 import com.shuremind.data.repo.TagRepository
 import com.shuremind.data.repo.TaskRepository
+import com.shuremind.data.repo.WindowConversionRepository
 import com.shuremind.data.repo.parseDaysOfWeekCsv
 import com.shuremind.data.repo.parseTimesOfDayCsv
 import com.shuremind.data.repo.toCsv
 import com.shuremind.engine.CompletionAction
+import com.shuremind.engine.ConsumableEngine
 import com.shuremind.engine.RecurrenceAnchor
 import com.shuremind.engine.RecurrenceFrequency
 import com.shuremind.engine.TaskType
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -33,6 +36,7 @@ class TaskDetailViewModel(
     private val reminderRuleRepository: ReminderRuleRepository,
     private val completionRepository: CompletionRepository,
     private val settingsRepository: SettingsRepository,
+    private val windowConversionRepository: WindowConversionRepository,
     private val zone: ZoneId = ZoneId.systemDefault(),
     private val nowProvider: () -> Long = System::currentTimeMillis
 ) : ViewModel() {
@@ -40,7 +44,7 @@ class TaskDetailViewModel(
     private val _uiState = MutableStateFlow(TaskDetailUiState())
     val uiState: StateFlow<TaskDetailUiState> = _uiState.asStateFlow()
 
-    fun load(taskId: String) {
+    fun load(taskId: String, autoOpenRestock: Boolean = false) {
         viewModelScope.launch {
             val task = taskRepository.getById(taskId) ?: return@launch
             val tags = tagRepository.getTagsForTask(taskId).map { it.name }
@@ -48,6 +52,7 @@ class TaskDetailViewModel(
             if (reminderOffsets.isEmpty() && task.type in REMINDER_RULE_TYPES) {
                 reminderOffsets = settingsRepository.settings.first().defaultReminderOffsets[task.type].orEmpty()
             }
+            val (remainingStock, runOutDate) = consumableDisplayFor(task)
             _uiState.value = TaskDetailUiState(
                 taskId = task.id,
                 isLoaded = true,
@@ -73,14 +78,29 @@ class TaskDetailViewModel(
                 dosePerIntake = task.dosePerIntake?.toString() ?: "",
                 restockLeadDays = task.restockLeadDays?.toString() ?: "",
                 stockRecordedAt = task.stockRecordedAt,
+                remainingStock = remainingStock,
+                runOutDate = runOutDate,
                 meterName = task.meterName ?: "",
                 meterInterval = task.meterInterval?.toString() ?: "",
                 lastDoneMeter = task.lastDoneMeter?.toString() ?: "",
                 windowHint = task.windowHint ?: "",
                 reminderOffsets = reminderOffsets,
-                tags = tags
+                tags = tags,
+                showRestockDialog = autoOpenRestock && task.type == TaskType.CONSUMABLE
             )
         }
+    }
+
+    private fun consumableDisplayFor(task: TaskEntity): Pair<Double?, String?> {
+        val dosePerIntake = task.dosePerIntake
+        val stockQty = task.stockQty
+        if (task.type != TaskType.CONSUMABLE || dosePerIntake == null || stockQty == null) return null to null
+        val today = Instant.ofEpochMilli(nowProvider()).atZone(zone).toLocalDate()
+        val stockRecordedAt = task.stockRecordedAt?.let(LocalDate::parse) ?: today
+        val intakesPerDay = task.recTimesOfDay.parseTimesOfDayCsv().size.coerceAtLeast(1)
+        val remaining = ConsumableEngine.remainingStock(stockRecordedAt, stockQty, dosePerIntake, intakesPerDay, today)
+        val runOutDate = ConsumableEngine.computeRunOutDate(stockRecordedAt, stockQty, dosePerIntake, intakesPerDay)
+        return remaining to runOutDate.toString()
     }
 
     fun setTitle(value: String) = update { it.copy(title = value) }
@@ -119,6 +139,52 @@ class TaskDetailViewModel(
     fun removeTag(name: String) = update { it.copy(tags = it.tags - name) }
     fun addReminderOffset(offsetIso: String) = update { it.copy(reminderOffsets = (it.reminderOffsets + offsetIso).distinct()) }
     fun removeReminderOffset(offsetIso: String) = update { it.copy(reminderOffsets = it.reminderOffsets - offsetIso) }
+
+    // --- D-25: WINDOW -> DEADLINE "date learned" ---
+    fun setDateLearnedDate(value: String?) = update { it.copy(dateLearnedDate = value) }
+    fun setDateLearnedTime(value: String?) = update { it.copy(dateLearnedTime = value) }
+
+    fun convertWindowToDeadline() {
+        val state = _uiState.value
+        val dueLocalDate = state.dateLearnedDate ?: return
+        viewModelScope.launch {
+            val defaultOffsets = settingsRepository.settings.first().defaultReminderOffsets[TaskType.DEADLINE].orEmpty()
+            val updated = windowConversionRepository.convertWindowToDeadline(
+                taskId = state.taskId,
+                dueLocalDate = LocalDate.parse(dueLocalDate),
+                dueLocalTime = state.dateLearnedTime?.let(LocalTime::parse),
+                defaultReminderOffsets = defaultOffsets,
+                now = nowProvider()
+            )
+            if (updated != null) load(state.taskId)
+        }
+    }
+
+    // --- D-26: CONSUMABLE restock ---
+    fun setBoughtQuantity(value: String) = update { it.copy(boughtQuantity = value) }
+    fun openRestockDialog() = update { it.copy(showRestockDialog = true) }
+    fun dismissRestockDialog() = update { it.copy(showRestockDialog = false, boughtQuantity = "") }
+
+    fun confirmRestock() {
+        val state = _uiState.value
+        val bought = state.boughtQuantity.toDoubleOrNull() ?: return
+        viewModelScope.launch {
+            val existing = taskRepository.getById(state.taskId) ?: return@launch
+            val now = nowProvider()
+            val today = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
+            val (remaining, _) = consumableDisplayFor(existing)
+            var updated = existing.copy(
+                stockQty = (remaining ?: 0.0) + bought,
+                stockRecordedAt = today.toString(),
+                updatedAt = now,
+                dirty = 1
+            )
+            val nowZdt = Instant.ofEpochMilli(now).atZone(zone)
+            updated = updated.copy(nextFireAt = NextFireAtCalculator.compute(updated, zone, nowZdt, lastDoneAt = null))
+            taskRepository.update(updated, now)
+            load(state.taskId)
+        }
+    }
 
     private fun update(block: (TaskDetailUiState) -> TaskDetailUiState) {
         _uiState.value = block(_uiState.value)

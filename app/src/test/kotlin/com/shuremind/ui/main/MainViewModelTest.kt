@@ -1,11 +1,13 @@
 package com.shuremind.ui.main
 
+import com.shuremind.data.entity.MeterReadingEntity
 import com.shuremind.engine.TaskStatus
 import com.shuremind.engine.TaskType
 import com.shuremind.testutil.FakeCompletionRepository
 import com.shuremind.testutil.FakeSettingsRepository
 import com.shuremind.testutil.FakeTagRepository
 import com.shuremind.testutil.FakeTaskRepository
+import com.shuremind.testutil.fakeMeterRepository
 import com.shuremind.testutil.fixtureTask
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -42,12 +44,14 @@ class MainViewModelTest {
     private fun viewModel(
         tasks: List<com.shuremind.data.entity.TaskEntity> = emptyList(),
         taskRepository: FakeTaskRepository = FakeTaskRepository(tasks),
-        tagRepository: FakeTagRepository = FakeTagRepository()
+        tagRepository: FakeTagRepository = FakeTagRepository(),
+        meterReadings: List<MeterReadingEntity> = emptyList()
     ) = MainViewModel(
         taskRepository = taskRepository,
         completionRepository = FakeCompletionRepository(),
         tagRepository = tagRepository,
         settingsRepository = FakeSettingsRepository(),
+        meterRepository = fakeMeterRepository(meterReadings),
         zone = zone,
         nowProvider = { now }
     )
@@ -173,5 +177,44 @@ class MainViewModelTest {
         // Snooze must not touch status or next_fire_at (alarms are M3).
         assertEquals(TaskStatus.ACTIVE, updated.status)
         assertEquals(now, updated.nextFireAt)
+    }
+
+    // --- D-27: meter-due (OR-logic) surfacing ---
+
+    @Test
+    fun `meter-due task surfaces in overdue even though its own time rule is not yet due`() = runTest(dispatcher) {
+        val carOil = fixtureTask(
+            "car-oil",
+            type = TaskType.RECURRING,
+            nextFireAt = now + 30L * 86_400_000L, // 30 days out by time — not due yet
+            meterName = "car",
+            meterInterval = 10_000.0,
+            lastDoneMeter = 40_000.0
+        )
+        val reading = MeterReadingEntity(id = "r1", meterName = "car", value = 50_500.0, recordedAt = now) // crossed 10,000 km
+        val vm = viewModel(tasks = listOf(carOil), meterReadings = listOf(reading))
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(listOf("car-oil"), vm.uiState.value.overdue.map { it.task.id })
+        assertTrue(vm.uiState.value.today.isEmpty())
+        assertTrue(vm.uiState.value.upcoming.isEmpty())
+    }
+
+    @Test
+    fun `meter task below threshold is not forced into overdue`() = runTest(dispatcher) {
+        val carOil = fixtureTask(
+            "car-oil",
+            type = TaskType.RECURRING,
+            nextFireAt = now + 30L * 86_400_000L,
+            meterName = "car",
+            meterInterval = 10_000.0,
+            lastDoneMeter = 40_000.0
+        )
+        val reading = MeterReadingEntity(id = "r1", meterName = "car", value = 45_000.0, recordedAt = now) // only 5,000 km since last done
+        val vm = viewModel(tasks = listOf(carOil), meterReadings = listOf(reading))
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.overdue.isEmpty())
+        assertEquals(listOf("car-oil"), vm.uiState.value.upcoming.map { it.task.id })
     }
 }

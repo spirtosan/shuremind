@@ -174,4 +174,38 @@
         <item quantity="many">%d overdue reminders</item>
         <item quantity="other">%d overdue reminders</item>
     </plurals>
+
+    <!-- M4: WINDOW -> DEADLINE conversion (D-25) -->
+    <string name="detail_section_date_learned">Date learned</string>
+    <string name="detail_date_learned_pick">Pick date</string>
+    <string name="detail_convert_to_deadline">Convert to deadline</string>
+
+    <!-- M4: CONSUMABLE restock (D-26) -->
+    <string name="field_remaining_stock_value">Remaining: %1$.1f</string>
+    <string name="field_run_out_date_value">Runs out: %1$s</string>
+    <string name="detail_restock_action">Restock</string>
+    <string name="detail_restock_dialog_title">How many did you buy?</string>
+    <string name="detail_restock_dialog_hint">Quantity</string>
+
+    <!-- M4: main list entry points -->
+    <string name="action_meter_readings">Meter readings</string>
+    <string name="action_weekly_review">Weekly review</string>
+
+    <!-- M4: Meter readings screen (D-27) -->
+    <string name="meter_readings_title">Meter readings</string>
+    <string name="meter_name_hint">Meter name</string>
+    <string name="meter_value_hint">Value</string>
+    <string name="meter_add_reading">Add reading</string>
+    <string name="meter_empty">No meter readings yet</string>
+    <string name="meter_task_delta_value">%1$s — %2$s since last done</string>
+    <string name="meter_seed_task_title">Log your %1$s reading</string>
+
+    <!-- M4: Weekly review screen (D-28) -->
+    <string name="weekly_review_title">Weekly review</string>
+    <string name="weekly_review_section_someday">Someday</string>
+    <string name="weekly_review_section_stale">Stale</string>
+    <string name="weekly_review_section_windows">Windows</string>
+    <string name="weekly_review_empty">Nothing to review</string>
+    <string name="weekly_review_archive">Archive</string>
+    <string name="weekly_review_task_title">Weekly review</string>
 </resources>

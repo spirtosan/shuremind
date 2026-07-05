@@ -1,0 +1,15 @@
+package com.shuremind.data.repo
+
+import com.shuremind.data.dao.MeterReadingDao
+import com.shuremind.data.entity.MeterReadingEntity
+import kotlinx.coroutines.flow.Flow
+
+/** UI/ViewModels talk only to this repo, never MeterReadingDao directly (from M2 on). */
+class MeterRepository(private val meterReadingDao: MeterReadingDao) {
+
+    suspend fun record(reading: MeterReadingEntity) = meterReadingDao.insert(reading)
+
+    suspend fun getLatest(meterName: String): MeterReadingEntity? = meterReadingDao.getLatest(meterName)
+
+    fun observeForMeter(meterName: String): Flow<List<MeterReadingEntity>> = meterReadingDao.observeForMeter(meterName)
+}

@@ -25,6 +25,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * The single M3 entry point (D-07/D-10/D-23), called from: alarm fire, boot receiver, MainActivity
@@ -46,15 +47,29 @@ class RecomputeAndRearm(
     private val zone: ZoneId = ZoneId.systemDefault()
 ) {
     // run() itself writes to taskRepository/completionRepository (recompute/auto-skip), and those
-    // repositories call back into run() via ScheduleChangeNotifier — without this guard that would
-    // recurse. tryLock (non-blocking, non-reentrant) simply drops a nested/concurrent call: the
-    // in-progress pass already reads the freshest state before its own writes, so nothing is lost.
+    // repositories call back into run() via ScheduleChangeNotifier — without a guard that would
+    // recurse. tryLock (non-blocking, non-reentrant) is that guard, but a failed tryLock must NOT
+    // just drop the call: a genuinely concurrent caller (e.g. a task created mid-pass) may have
+    // changed state the in-flight pass already read past. Instead it flags [rerunRequested] so the
+    // current lock holder loops and does another full pass — with a fresh `now` — once its current
+    // one finishes. Nested calls from run()'s own writes flag a rerun too, but that extra pass is a
+    // no-op once state has converged (every write below is conditional on something having actually
+    // changed), so the loop always terminates.
     private val runLock = Mutex()
+    private val rerunRequested = AtomicBoolean(false)
 
     suspend fun run(now: ZonedDateTime = ZonedDateTime.now(zone)) {
-        if (!runLock.tryLock()) return
+        if (!runLock.tryLock()) {
+            rerunRequested.set(true)
+            return
+        }
         try {
-            runLocked(now)
+            var passNow = now
+            do {
+                rerunRequested.set(false)
+                runLocked(passNow)
+                passNow = ZonedDateTime.now(zone)
+            } while (rerunRequested.get())
         } finally {
             runLock.unlock()
         }

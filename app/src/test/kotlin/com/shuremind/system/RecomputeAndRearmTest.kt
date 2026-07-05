@@ -1,5 +1,7 @@
 package com.shuremind.system
 
+import com.shuremind.data.entity.TaskEntity
+import com.shuremind.data.repo.TaskRepository
 import com.shuremind.engine.CompletionAction
 import com.shuremind.engine.RecurrenceAnchor
 import com.shuremind.engine.RecurrenceFrequency
@@ -11,8 +13,14 @@ import com.shuremind.testutil.FakeReminderRuleRepository
 import com.shuremind.testutil.FakeSettingsRepository
 import com.shuremind.testutil.FakeTaskRepository
 import com.shuremind.testutil.fixtureTask
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,6 +28,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 class RecomputeAndRearmTest {
 
@@ -49,8 +58,51 @@ class RecomputeAndRearmTest {
         }
     }
 
+    /**
+     * Simulates a pass stuck mid-read: the *first* observeActive() call captures its snapshot
+     * (matching the real bug scenario — the in-flight pass already read the list) and then
+     * suspends on [gate] before emitting it, so a "concurrent" write made while gated is invisible
+     * to that first pass and only picked up by a subsequent one.
+     */
+    private class GatedTaskRepository(initial: List<TaskEntity>) : TaskRepository {
+        private val tasks = initial.associateBy { it.id }.toMutableMap()
+        val gate = CompletableDeferred<Unit>()
+        private var observeActiveCalls = 0
+
+        override suspend fun upsert(task: TaskEntity, now: Long) {
+            tasks[task.id] = task
+        }
+
+        override suspend fun update(task: TaskEntity, now: Long) {
+            tasks[task.id] = task
+        }
+
+        override suspend fun softDelete(id: String, now: Long) {
+            tasks[id]?.let { tasks[id] = it.copy(deletedAt = now) }
+        }
+
+        override suspend fun getById(id: String): TaskEntity? = tasks[id]
+
+        override suspend fun snooze(task: TaskEntity, until: Long, now: Long) {
+            tasks[task.id] = task.copy(snoozedUntil = until)
+        }
+
+        override fun observeActive(excludedStatus: TaskStatus): Flow<List<TaskEntity>> = flow {
+            observeActiveCalls++
+            val snapshot = tasks.values.filter { it.deletedAt == null && it.status != excludedStatus }
+            if (observeActiveCalls == 1) gate.await()
+            emit(snapshot)
+        }
+
+        override fun observeByType(type: TaskType): Flow<List<TaskEntity>> =
+            flow { emit(tasks.values.filter { it.type == type }) }
+
+        override fun observeScheduled(): Flow<List<TaskEntity>> =
+            flow { emit(tasks.values.filter { it.nextFireAt != null }) }
+    }
+
     private fun useCase(
-        taskRepository: FakeTaskRepository,
+        taskRepository: TaskRepository,
         completionRepository: FakeCompletionRepository = FakeCompletionRepository(),
         reminderRuleRepository: FakeReminderRuleRepository = FakeReminderRuleRepository(),
         watermarkRepository: FakeDeliveryWatermarkRepository = FakeDeliveryWatermarkRepository(),
@@ -158,5 +210,40 @@ class RecomputeAndRearmTest {
             listOf("2026-06-01 08:00", "2026-06-02 08:00", "2026-06-03 08:00"),
             completionRepository.recorded.map { it.occurrenceLocal }.sorted()
         )
+    }
+
+    @Test
+    fun `a write arriving while a pass is in flight triggers a rerun that picks it up`() = runTest {
+        // Real wall-clock "now" (not a fixed calendar date): the rerun uses a fresh now internally,
+        // so due dates here are anchored relative to it rather than to an arbitrary fixed instant.
+        val testNow = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.MINUTES)
+        val farTask = fixtureTask("far", type = TaskType.EVENT)
+            .copy(
+                dueLocalDate = testNow.plusDays(60).toLocalDate().toString(),
+                dueLocalTime = testNow.plusDays(60).toLocalTime().toString()
+            )
+        val taskRepository = GatedTaskRepository(listOf(farTask))
+        val armer = FakeAlarmArmer()
+        val recomputeAndRearm = useCase(taskRepository, alarmArmer = armer)
+
+        // Start a pass; it reads (and gates on) the task list before the "concurrent" write below.
+        val firstPass = launch { recomputeAndRearm.run() }
+        advanceUntilIdle()
+
+        // Arrives while the first pass is stuck mid-read, due sooner than the far task.
+        val urgentDue = testNow.plusHours(1)
+        val urgentTask = fixtureTask("urgent", type = TaskType.EVENT)
+            .copy(dueLocalDate = urgentDue.toLocalDate().toString(), dueLocalTime = urgentDue.toLocalTime().toString())
+        taskRepository.upsert(urgentTask)
+        recomputeAndRearm.run() // tryLock fails (first pass still holds it) -> flags a rerun, returns immediately
+
+        taskRepository.gate.complete(Unit) // release the first pass
+        firstPass.join()
+        advanceUntilIdle()
+
+        // The first pass alone would have armed at farTask's instant; the rerun it triggered picks
+        // up urgentTask (added mid-pass) and re-arms at the earlier instant instead.
+        assertEquals(urgentDue.toInstant().toEpochMilli(), armer.armedAt)
+        assertNotNull(taskRepository.getById("urgent")?.nextFireAt)
     }
 }

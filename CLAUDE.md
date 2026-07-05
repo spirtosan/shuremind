@@ -26,3 +26,4 @@ Unit tests for `engine`: each of the 8 behaviors' next-occurrence math; COMPLETI
 - Work in small verifiable steps; after each step: build + tests green, then summarize what changed and why in ≤5 lines.
 - Follow the M1–M5 phases in PROJECT.md; do not pull v2 items (sync, budget, dependencies, geofencing, per-occurrence edits) into scope.
 - Acceptance = the 11 test cases in PROJECT.md work end-to-end.
+- D-20: the user does not hand-edit files. When asked to update planning docs (session logs, new D-xx lines, scope changes), print the proposed text for review first, then write it yourself on approval — never instruct the user to paste anything.

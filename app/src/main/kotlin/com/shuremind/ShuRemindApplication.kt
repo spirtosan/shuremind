@@ -1,6 +1,7 @@
 package com.shuremind
 
 import android.app.Application
+import android.util.Log
 import com.shuremind.data.entity.TaskEntity
 import com.shuremind.data.repo.NextFireAtCalculator
 import com.shuremind.data.repo.toCsv
@@ -29,13 +30,21 @@ class ShuRemindApplication : Application() {
         container = AppContainer(this)
         NotificationChannels.ensureCreated(this)
         HousekeepingWorker.schedule(this)
-        CoroutineScope(Dispatchers.Default).launch { seedWeeklyReviewTaskIfNeeded() }
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                seedWeeklyReviewTaskIfNeeded()
+            } catch (e: Exception) {
+                Log.e("ShuRemindApplication", "Weekly review seeding failed", e)
+            }
+        }
     }
 
     /**
      * D-28: seeds the "Weekly review" reminder (RECURRING CALENDAR, weekly, Sunday 18:00) once, on
      * first run after this version. Idempotent via the stored seeded-task-id flag; the user may
-     * freely delete or edit the resulting task afterward without it ever being reseeded.
+     * freely delete or edit the resulting task afterward without it ever being reseeded. Must never
+     * crash startup — the launch site above catches and logs failures, and markSeeded only runs
+     * after a successful write so a failed attempt is retried on next launch.
      */
     private suspend fun seedWeeklyReviewTaskIfNeeded() {
         if (container.weeklyReviewSeedRepository.isSeeded()) return

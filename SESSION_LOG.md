@@ -78,3 +78,15 @@ _Project memory across chat sessions._
   whenever run during quiet hours (~21:00–08:00) — fixed this session
   by pinning the test clock (see below).
 - Next: M5 (import/export, auto-backup, polish).
+- Addendum (post-session): first real-device launch crashed at startup —
+  Theme.ShuRemind still had the M1 android:Theme.Material parent while
+  MainActivity has been an AppCompatActivity since M1.5 (D-18); fixed to
+  Theme.AppCompat.DayNight.NoActionBar. Weekly-review seeding hardened:
+  try/catch+log at the launch site, markSeeded only after a successful
+  write — so its failure mode is a duplicate seeded task on a crashed
+  first run (observed during repro), never loss or a startup crash.
+  Verified on device (moto g 60): clean launch, main list renders.
+  Commit 41d4383.
+- Pre-M5 device smoke test now unblocked and pending: Restock
+  notification action, weekly-review notification tap, first meter
+  reading + monthly prompt seeding, language switch.

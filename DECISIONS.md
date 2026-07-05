@@ -1,0 +1,22 @@
+# ShuRemind — DECISIONS.md
+_ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
+
+- **D-01** v1 is fully offline; schema carries sync fields (uuid, updated_at, deleted_at, dirty) from day 1 so sync needs no migration. (2026-07-04)
+- **D-02** Taxonomy: all reminders are one of 8 behaviors (EVENT, ANNIVERSARY, DEADLINE, WINDOW, NAG, RECURRING, CONSUMABLE, SOMEDAY) + quick-timer and meter extras. Features are behaviors, not screens. (2026-07-04)
+- **D-03** Geofencing rejected for v1/v2-early: permission+battery cost outweighs value; manual #shop tag filter covers it. (2026-07-04)
+- **D-04** Priority is computed at read time and grows as due approaches; never stored. Constants live in one tunable file. (2026-07-04)
+- **D-05** Soft deletes only (deleted_at); CompletionLog is append-only. (2026-07-04)
+- **D-06** All scheduling math is local wall-clock (java.time), fire instants derived; DST transitions unit-tested. Never "+N ms across days". (2026-07-04)
+- **D-07** Single-next-alarm pattern: one armed AlarmManager alarm at a time; recompute+re-arm on fire/boot/open/TZ/housekeeping. No persistent foreground service — reminder apps don't need the fshu keepalive machinery. (2026-07-04)
+- **D-08** Exact alarms are opt-in; inexact `setAndAllowWhileIdle` is the default and acceptable. `canScheduleExactAlarms()` branch lifted from fshu Section E. (2026-07-04)
+- **D-09** v1 occurrence actions: Done/Skip/Snooze. Per-occurrence editing (RRULE-exception style) deferred to v2. (2026-07-04)
+- **D-10** Missed-alarm recovery is a first-class feature: overdue summary on boot/open/housekeeping. (2026-07-04)
+- **D-11** Import/export = versioned full-fidelity JSON (replace-all import in v1); daily auto-backup keeping last 7. Doubles as phone-migration path and future sync foundation. (2026-07-04)
+- **D-12** Quiet hours are global (default 22:00–08:00); deferred delivery after quiet end. Per-task override deferred. (2026-07-04)
+- **D-13** Wife's reminders run standalone on her phone in v1; export/import file is the sharing mechanism until sync. (2026-07-04)
+- **D-14** Budget planning deferred (v2+). v1 keeps only estimated_cost field + not_before date (covers "after salary"). (2026-07-04)
+- **D-15** Default currency EUR (Bulgaria post-2026 changeover), configurable. (2026-07-04)
+- **D-16** Stack: Kotlin/Compose/Room/DataStore/AlarmManager/WorkManager, minSdk 26 + desugaring, single :app module, no GMS/Firebase in v1, no new libraries without explicit approval. (2026-07-04)
+- **D-17** Reuse from fshu-next: Section-E alarm branching, boot-receiver re-arm pattern (simplified, no directBoot), permission onboarding structure (trimmed), GAPS section as OEM documentation. Everything else (wake locks, watchdogs, FCM, foreground service) explicitly NOT reused. (2026-07-04)
+- **D-18** App is multilingual from v1: English (default), Bulgarian, Russian. All user-visible text lives in string resources (values/, values-bg/, values-ru/); plural forms via <plurals> resources (mandatory — Russian plural rules); dates/times via java.time locale formatting. UI language is user-selectable in Settings (AppCompatDelegate.setApplicationLocales + autoStoreLocales; locales_config.xml for Android 13+ system settings integration), defaulting to system language. Data stays language-neutral: DB, engine, export JSON, tag names never localized. androidx.appcompat approved for this purpose. (2026-07-05)
+- **D-19** CONSUMABLE run-out math anchors to a new Task.stock_recorded_at date (set at creation and on every stock edit/restock), not to created_at or now — otherwise the reminder either slides forward forever or breaks after the first restock. Supersedes the M1 interim use of created_at. (2026-07-05)

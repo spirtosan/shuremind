@@ -1,0 +1,24 @@
+package com.shuremind.data.dao
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.shuremind.data.entity.TaskTagEntity
+
+@Dao
+interface TaskTagDao {
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(crossRef: TaskTagEntity)
+
+    @Delete
+    suspend fun delete(crossRef: TaskTagEntity)
+
+    @Query("SELECT tag_id FROM task_tags WHERE task_id = :taskId")
+    suspend fun getTagIdsForTask(taskId: String): List<String>
+
+    @Query("SELECT task_id FROM task_tags WHERE tag_id = :tagId")
+    suspend fun getTaskIdsForTag(tagId: String): List<String>
+}

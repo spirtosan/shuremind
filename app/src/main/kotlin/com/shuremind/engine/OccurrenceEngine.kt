@@ -7,8 +7,9 @@ import java.time.ZonedDateTime
 object OccurrenceEngine {
 
     /**
-     * @param createdAt used as the CALENDAR-grid anchor fallback (when no due date is set) and as
-     *   the COMPLETION-anchor fallback when the task has never been done.
+     * @param createdAt used as the CALENDAR-grid anchor fallback (when no due date is set), the
+     *   COMPLETION-anchor fallback when the task has never been done, and the CONSUMABLE
+     *   stock-recorded-at fallback when the task predates D-19 and has none set.
      * @param lastDoneAt last DONE completion instant, for COMPLETION-anchor recurrence.
      * Returns null for SOMEDAY (never fires) or when required type-specific fields are missing.
      */
@@ -81,7 +82,7 @@ object OccurrenceEngine {
             val restockLeadDays = schedule.restockLeadDays
             if (stockQty != null && dosePerIntake != null && restockLeadDays != null) {
                 ConsumableEngine.nextOccurrence(
-                    stockRecordedAt = createdAt.toLocalDate(),
+                    stockRecordedAt = schedule.stockRecordedAt ?: createdAt.toLocalDate(),
                     stockQty = stockQty,
                     dosePerIntake = dosePerIntake,
                     intakesPerDay = schedule.recTimesOfDay.size.coerceAtLeast(1),

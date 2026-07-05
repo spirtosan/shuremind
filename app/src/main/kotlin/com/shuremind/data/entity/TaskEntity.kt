@@ -41,6 +41,7 @@ data class TaskEntity(
     @ColumnInfo(name = "stock_qty") val stockQty: Double?,
     @ColumnInfo(name = "dose_per_intake") val dosePerIntake: Double?,
     @ColumnInfo(name = "restock_lead_days") val restockLeadDays: Int?,
+    @ColumnInfo(name = "stock_recorded_at") val stockRecordedAt: String?,
     @ColumnInfo(name = "meter_name") val meterName: String?,
     @ColumnInfo(name = "meter_interval") val meterInterval: Double?,
     @ColumnInfo(name = "last_done_meter") val lastDoneMeter: Double?,

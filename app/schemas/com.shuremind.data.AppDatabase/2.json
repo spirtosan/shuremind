@@ -1,0 +1,505 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "cf89465eaeb6bd6083f0031b60c4e3b8",
+    "entities": [
+      {
+        "tableName": "tasks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `notes` TEXT, `type` TEXT NOT NULL, `status` TEXT NOT NULL, `impact` INTEGER NOT NULL, `urgency` INTEGER NOT NULL, `estimated_cost` REAL, `due_local_date` TEXT, `due_local_time` TEXT, `not_before` TEXT, `rec_freq` TEXT, `rec_interval` INTEGER NOT NULL, `rec_anchor` TEXT, `rec_days_of_week` TEXT, `rec_day_of_month` INTEGER, `rec_times_of_day` TEXT, `rec_end_date` TEXT, `nag_interval_hours` REAL, `stock_qty` REAL, `dose_per_intake` REAL, `restock_lead_days` INTEGER, `stock_recorded_at` TEXT, `meter_name` TEXT, `meter_interval` REAL, `last_done_meter` REAL, `window_hint` TEXT, `snoozed_until` INTEGER, `next_fire_at` INTEGER, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `deleted_at` INTEGER, `dirty` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "impact",
+            "columnName": "impact",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "urgency",
+            "columnName": "urgency",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedCost",
+            "columnName": "estimated_cost",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "dueLocalDate",
+            "columnName": "due_local_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "dueLocalTime",
+            "columnName": "due_local_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notBefore",
+            "columnName": "not_before",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recFreq",
+            "columnName": "rec_freq",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recInterval",
+            "columnName": "rec_interval",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recAnchor",
+            "columnName": "rec_anchor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recDaysOfWeek",
+            "columnName": "rec_days_of_week",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recDayOfMonth",
+            "columnName": "rec_day_of_month",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "recTimesOfDay",
+            "columnName": "rec_times_of_day",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recEndDate",
+            "columnName": "rec_end_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "nagIntervalHours",
+            "columnName": "nag_interval_hours",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "stockQty",
+            "columnName": "stock_qty",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "dosePerIntake",
+            "columnName": "dose_per_intake",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "restockLeadDays",
+            "columnName": "restock_lead_days",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "stockRecordedAt",
+            "columnName": "stock_recorded_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "meterName",
+            "columnName": "meter_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "meterInterval",
+            "columnName": "meter_interval",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "lastDoneMeter",
+            "columnName": "last_done_meter",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "windowHint",
+            "columnName": "window_hint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "snoozedUntil",
+            "columnName": "snoozed_until",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "nextFireAt",
+            "columnName": "next_fire_at",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dirty",
+            "columnName": "dirty",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_tasks_next_fire_at",
+            "unique": false,
+            "columnNames": [
+              "next_fire_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tasks_next_fire_at` ON `${TABLE_NAME}` (`next_fire_at`)"
+          },
+          {
+            "name": "index_tasks_status_deleted_at",
+            "unique": false,
+            "columnNames": [
+              "status",
+              "deleted_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tasks_status_deleted_at` ON `${TABLE_NAME}` (`status`, `deleted_at`)"
+          },
+          {
+            "name": "index_tasks_type",
+            "unique": false,
+            "columnNames": [
+              "type"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tasks_type` ON `${TABLE_NAME}` (`type`)"
+          }
+        ]
+      },
+      {
+        "tableName": "reminder_rules",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `task_id` TEXT NOT NULL, `offset_iso` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`task_id`) REFERENCES `tasks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "task_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offsetIso",
+            "columnName": "offset_iso",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_reminder_rules_task_id",
+            "unique": false,
+            "columnNames": [
+              "task_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_reminder_rules_task_id` ON `${TABLE_NAME}` (`task_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "tasks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "task_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "tags",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `color` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_tags_name",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_tags_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ]
+      },
+      {
+        "tableName": "task_tags",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`task_id` TEXT NOT NULL, `tag_id` TEXT NOT NULL, PRIMARY KEY(`task_id`, `tag_id`), FOREIGN KEY(`task_id`) REFERENCES `tasks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`tag_id`) REFERENCES `tags`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "taskId",
+            "columnName": "task_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tagId",
+            "columnName": "tag_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "task_id",
+            "tag_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_task_tags_task_id",
+            "unique": false,
+            "columnNames": [
+              "task_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_task_tags_task_id` ON `${TABLE_NAME}` (`task_id`)"
+          },
+          {
+            "name": "index_task_tags_tag_id",
+            "unique": false,
+            "columnNames": [
+              "tag_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_task_tags_tag_id` ON `${TABLE_NAME}` (`tag_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "tasks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "task_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "tags",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "tag_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "completion_log",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `task_id` TEXT NOT NULL, `occurrence_local` TEXT NOT NULL, `action` TEXT NOT NULL, `completed_at` INTEGER NOT NULL, `meter_value` REAL, `note` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`task_id`) REFERENCES `tasks`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "task_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurrenceLocal",
+            "columnName": "occurrence_local",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "action",
+            "columnName": "action",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedAt",
+            "columnName": "completed_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "meterValue",
+            "columnName": "meter_value",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_completion_log_task_id",
+            "unique": false,
+            "columnNames": [
+              "task_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_completion_log_task_id` ON `${TABLE_NAME}` (`task_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "tasks",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "task_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "meter_readings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `meter_name` TEXT NOT NULL, `value` REAL NOT NULL, `recorded_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "meterName",
+            "columnName": "meter_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedAt",
+            "columnName": "recorded_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cf89465eaeb6bd6083f0031b60c4e3b8')"
+    ]
+  }
+}

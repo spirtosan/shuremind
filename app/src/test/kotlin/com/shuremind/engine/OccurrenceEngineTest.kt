@@ -115,6 +115,37 @@ class OccurrenceEngineTest {
     }
 
     @Test
+    fun `CONSUMABLE anchors run-out math to stockRecordedAt, not createdAt`() {
+        // D-19: a restock long after creation must re-anchor the run-out date, or the
+        // reminder would stay stuck on the original createdAt-based schedule forever.
+        val schedule = TaskSchedule(
+            type = TaskType.CONSUMABLE,
+            stockQty = 30.0,
+            dosePerIntake = 1.0,
+            restockLeadDays = 5,
+            recTimesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+            stockRecordedAt = LocalDate.of(2026, 6, 1)
+        )
+        val result = OccurrenceEngine.nextOccurrence(schedule, zone, ZonedDateTime.of(2026, 6, 2, 0, 0, 0, 0, zone), createdAt)
+        assertEquals(LocalDate.of(2026, 6, 11), result?.toLocalDate())
+    }
+
+    @Test
+    fun `CONSUMABLE falls back to createdAt when stockRecordedAt is null`() {
+        // Pre-D-19 tasks (or any edge case where the anchor was never set) must still work.
+        val schedule = TaskSchedule(
+            type = TaskType.CONSUMABLE,
+            stockQty = 30.0,
+            dosePerIntake = 1.0,
+            restockLeadDays = 5,
+            recTimesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+            stockRecordedAt = null
+        )
+        val result = OccurrenceEngine.nextOccurrence(schedule, zone, ZonedDateTime.of(2026, 1, 2, 0, 0, 0, 0, zone), createdAt)
+        assertEquals(LocalDate.of(2026, 1, 11), result?.toLocalDate())
+    }
+
+    @Test
     fun `SOMEDAY never fires`() {
         // Acceptance test #2: shower tray.
         val schedule = TaskSchedule(type = TaskType.SOMEDAY)

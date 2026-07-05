@@ -22,7 +22,9 @@ data class SettingsUiState(
     val defaultAllDayTime: LocalTime = LocalTime.of(9, 0),
     val currency: String = "EUR",
     val snoozePresetsMinutes: List<Long> = emptyList(),
-    val defaultReminderOffsets: Map<TaskType, List<String>> = emptyMap()
+    val defaultReminderOffsets: Map<TaskType, List<String>> = emptyMap(),
+    val defaultSnoozeDurationMinutes: Long = 60L,
+    val exactAlarmsOptIn: Boolean = false
 )
 
 /** Backs the Settings screen (task 7, M2). Language changes apply immediately via AppCompatDelegate. */
@@ -41,7 +43,9 @@ class SettingsViewModel(
             defaultAllDayTime = settings.defaultAllDayTime,
             currency = settings.currency,
             snoozePresetsMinutes = settings.snoozePresets.map { it.toMinutes() },
-            defaultReminderOffsets = settings.defaultReminderOffsets
+            defaultReminderOffsets = settings.defaultReminderOffsets,
+            defaultSnoozeDurationMinutes = settings.defaultSnoozeDuration.toMinutes(),
+            exactAlarmsOptIn = settings.exactAlarmsOptIn
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, SettingsUiState())
 
@@ -68,5 +72,13 @@ class SettingsViewModel(
 
     fun setDefaultReminderOffsets(type: TaskType, offsets: List<String>) = viewModelScope.launch {
         settingsRepository.setDefaultReminderOffsets(type, offsets)
+    }
+
+    fun setDefaultSnoozeDurationMinutes(minutes: Long) = viewModelScope.launch {
+        settingsRepository.setDefaultSnoozeDuration(Duration.ofMinutes(minutes))
+    }
+
+    fun setExactAlarmsOptIn(optIn: Boolean) = viewModelScope.launch {
+        settingsRepository.setExactAlarmsOptIn(optIn)
     }
 }

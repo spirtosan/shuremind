@@ -1,6 +1,7 @@
 package com.shuremind.data.repo
 
 import com.shuremind.engine.EngineTuning
+import com.shuremind.engine.FireSettings
 import com.shuremind.engine.TaskType
 import kotlinx.coroutines.flow.Flow
 import java.time.Duration
@@ -13,7 +14,11 @@ data class AppSettings(
     val defaultAllDayTime: LocalTime = EngineTuning.DEFAULT_ALL_DAY_TIME,
     val currency: String = "EUR",
     val snoozePresets: List<Duration> = EngineTuning.SNOOZE_PRESETS,
-    val defaultReminderOffsets: Map<TaskType, List<String>> = DEFAULT_REMINDER_OFFSETS
+    val defaultReminderOffsets: Map<TaskType, List<String>> = DEFAULT_REMINDER_OFFSETS,
+    /** D-24: applied by the notification Snooze action (no duration chooser on the notification itself). */
+    val defaultSnoozeDuration: Duration = Duration.ofHours(1),
+    /** D-08: exact alarms are opt-in; default false (inexact setAndAllowWhileIdle) is acceptable. */
+    val exactAlarmsOptIn: Boolean = false
 ) {
     companion object {
         val DEFAULT_REMINDER_OFFSETS: Map<TaskType, List<String>> = mapOf(
@@ -38,4 +43,12 @@ interface SettingsRepository {
     suspend fun setSnoozePresets(presets: List<Duration>)
 
     suspend fun setDefaultReminderOffsets(type: TaskType, offsets: List<String>)
+
+    suspend fun setDefaultSnoozeDuration(duration: Duration)
+
+    suspend fun setExactAlarmsOptIn(optIn: Boolean)
 }
+
+/** Bridges DataStore-backed settings to the engine's Room/Android-free FireSettings. */
+fun AppSettings.toFireSettings(): FireSettings =
+    FireSettings(quietHoursStart = quietHoursStart, quietHoursEnd = quietHoursEnd, defaultAllDayTime = defaultAllDayTime)

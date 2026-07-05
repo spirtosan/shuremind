@@ -7,30 +7,32 @@ import com.shuremind.data.dao.TaskDao
 import com.shuremind.data.entity.CompletionLogEntity
 import com.shuremind.data.entity.TaskEntity
 import com.shuremind.engine.CompletionAction
+import com.shuremind.engine.OccurrenceLocalFormat
 import com.shuremind.engine.TaskStatus
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 internal class RoomCompletionRepository(
     private val database: AppDatabase,
     private val completionLogDao: CompletionLogDao,
-    private val taskDao: TaskDao
+    private val taskDao: TaskDao,
+    private val scheduleChangeNotifier: ScheduleChangeNotifier = ScheduleChangeNotifier.NONE
 ) : CompletionRepository {
 
     override suspend fun recordCompletion(entry: CompletionLogEntity, now: Long) {
         val meterValue = entry.meterValue
         if (meterValue == null) {
             completionLogDao.insert(entry)
-            return
+        } else {
+            database.withTransaction {
+                completionLogDao.insert(entry)
+                val task = taskDao.getById(entry.taskId) ?: return@withTransaction
+                taskDao.update(task.copy(lastDoneMeter = meterValue, updatedAt = now, dirty = 1))
+            }
         }
-        database.withTransaction {
-            completionLogDao.insert(entry)
-            val task = taskDao.getById(entry.taskId) ?: return@withTransaction
-            taskDao.update(task.copy(lastDoneMeter = meterValue, updatedAt = now, dirty = 1))
-        }
+        scheduleChangeNotifier.onScheduleChanged()
     }
 
     override fun observeForTask(taskId: String): Flow<List<CompletionLogEntity>> = completionLogDao.observeForTask(taskId)
@@ -41,7 +43,7 @@ internal class RoomCompletionRepository(
     override suspend fun completeTask(task: TaskEntity, action: CompletionAction, now: Long, zone: ZoneId) {
         val nowZdt = Instant.ofEpochMilli(now).atZone(zone)
         val occurrenceInstant = task.nextFireAt?.let { Instant.ofEpochMilli(it).atZone(zone) } ?: nowZdt
-        val occurrenceLocal = OCCURRENCE_FORMATTER.format(occurrenceInstant)
+        val occurrenceLocal = OccurrenceLocalFormat.format(occurrenceInstant)
         database.withTransaction {
             completionLogDao.insert(
                 CompletionLogEntity(
@@ -68,9 +70,6 @@ internal class RoomCompletionRepository(
             }
             taskDao.update(updated)
         }
-    }
-
-    private companion object {
-        val OCCURRENCE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        scheduleChangeNotifier.onScheduleChanged()
     }
 }

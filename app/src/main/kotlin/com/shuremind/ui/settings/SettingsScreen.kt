@@ -1,5 +1,16 @@
 package com.shuremind.ui.settings
 
+import android.Manifest
+import android.app.AlarmManager
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -29,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +52,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.shuremind.R
 import com.shuremind.data.repo.AppLanguage
 import com.shuremind.engine.TaskType
@@ -58,9 +74,13 @@ fun SettingsScreen(
     val state by viewModel.uiState.collectAsState()
     val locale = currentLocale()
     val context = LocalContext.current
+    val statuses = rememberPermissionStatuses()
 
     var editingTime by remember { mutableStateOf<TimeField?>(null) }
     var snoozeInput by remember { mutableStateOf("") }
+    var defaultSnoozeInput by remember { mutableStateOf("") }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     Scaffold(
         topBar = {
@@ -170,9 +190,84 @@ fun SettingsScreen(
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            SettingsSectionTitle(R.string.settings_section_alarms_notifications)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                PermissionRow(
+                    titleRes = R.string.settings_notifications_permission,
+                    statusRes = if (statuses.notificationsGranted) R.string.settings_notifications_granted else R.string.settings_notifications_not_granted,
+                    actionable = !statuses.notificationsGranted,
+                    onClick = { notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.settings_exact_alarms))
+                    Text(stringResource(R.string.settings_exact_alarms_subtitle), style = MaterialTheme.typography.bodySmall)
+                    if (state.exactAlarmsOptIn && !statuses.exactAlarmsGrantedByOs) {
+                        Text(
+                            stringResource(R.string.settings_exact_alarms_needs_grant),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.clickableOpenExactAlarmSettings(context)
+                        )
+                    }
+                }
+                Switch(
+                    checked = state.exactAlarmsOptIn,
+                    onCheckedChange = { checked ->
+                        viewModel.setExactAlarmsOptIn(checked)
+                        if (checked && !statuses.exactAlarmsGrantedByOs) {
+                            openExactAlarmSettings(context)
+                        }
+                    }
+                )
+            }
+
+            PermissionRow(
+                titleRes = R.string.settings_battery_optimization,
+                statusRes = if (statuses.batteryOptimizationIgnored) R.string.settings_battery_optimization_ignored else R.string.settings_battery_optimization_restricted,
+                actionable = !statuses.batteryOptimizationIgnored,
+                onClick = {
+                    context.startActivity(
+                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, "package:${context.packageName}".toUri())
+                    )
+                }
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                OutlinedTextField(
+                    value = defaultSnoozeInput,
+                    onValueChange = { defaultSnoozeInput = it },
+                    label = { Text(stringResource(R.string.settings_default_snooze_duration)) },
+                    placeholder = {
+                        Text(stringResource(R.string.settings_default_snooze_duration_value, formatSnoozeDuration(context, state.defaultSnoozeDurationMinutes)))
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = {
+                    val minutes = defaultSnoozeInput.toLongOrNull()
+                    if (minutes != null && minutes > 0) {
+                        viewModel.setDefaultSnoozeDurationMinutes(minutes)
+                        defaultSnoozeInput = ""
+                    }
+                }) {
+                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.settings_default_snooze_duration))
+                }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             SettingsSectionTitle(R.string.settings_section_backup)
             DisabledToggleRow(R.string.settings_auto_backup, R.string.settings_auto_backup_subtitle)
-            DisabledToggleRow(R.string.settings_exact_alarms, R.string.settings_exact_alarms_subtitle)
         }
     }
 
@@ -218,6 +313,73 @@ private fun DisabledToggleRow(titleRes: Int, subtitleRes: Int) {
         }
         Switch(checked = false, onCheckedChange = null, enabled = false)
     }
+}
+
+/** Status row for an OS-level permission/exemption: name, current status, tap-to-fix when not granted. */
+@Composable
+private fun PermissionRow(titleRes: Int, statusRes: Int, actionable: Boolean, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .let { if (actionable) it.clickableRow(onClick) else it }
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(stringResource(titleRes))
+            Text(
+                stringResource(statusRes),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (actionable) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+private fun Modifier.clickableRow(onClick: () -> Unit): Modifier = this.clickable(onClick = onClick)
+
+private fun Modifier.clickableOpenExactAlarmSettings(context: android.content.Context): Modifier =
+    this.clickable(onClick = { openExactAlarmSettings(context) })
+
+private fun openExactAlarmSettings(context: android.content.Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        context.startActivity(
+            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, "package:${context.packageName}".toUri())
+        )
+    }
+}
+
+private data class PermissionStatuses(
+    val notificationsGranted: Boolean,
+    val exactAlarmsGrantedByOs: Boolean,
+    val batteryOptimizationIgnored: Boolean
+)
+
+private fun computePermissionStatuses(context: android.content.Context): PermissionStatuses {
+    val notificationsGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+    val alarmManager = ContextCompat.getSystemService(context, AlarmManager::class.java)
+    val exactAlarmsGrantedByOs = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager?.canScheduleExactAlarms() == true
+    val powerManager = ContextCompat.getSystemService(context, PowerManager::class.java)
+    val batteryOptimizationIgnored = powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
+    return PermissionStatuses(notificationsGranted, exactAlarmsGrantedByOs, batteryOptimizationIgnored)
+}
+
+/** Re-checks OS permission/exemption status whenever the host activity resumes (e.g. back from system Settings). */
+@Composable
+private fun rememberPermissionStatuses(): PermissionStatuses {
+    val context = LocalContext.current
+    var statuses by remember { mutableStateOf(computePermissionStatuses(context)) }
+    DisposableEffect(context) {
+        val activity = context as? ComponentActivity
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) statuses = computePermissionStatuses(context)
+        }
+        activity?.lifecycle?.addObserver(observer)
+        onDispose { activity?.lifecycle?.removeObserver(observer) }
+    }
+    return statuses
 }
 
 @OptIn(ExperimentalLayoutApi::class)

@@ -1,5 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- D-08/D-17/Session-1-addendum: SCHEDULE_EXACT_ALARM (opt-in, user-facing toggle), not
+         USE_EXACT_ALARM, to keep Play Store distribution open. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
     <application
         android:name=".ShuRemindApplication"
         android:allowBackup="true"
@@ -11,6 +18,7 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.ShuRemind">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,6 +35,28 @@
                 android:name="autoStoreLocales"
                 android:value="true" />
         </service>
+
+        <!-- M3 (D-07): single-next-alarm target. Broadcast-only, never launched by other apps. -->
+        <receiver
+            android:name=".system.AlarmReceiver"
+            android:exported="false" />
+
+        <!-- M3 (D-06/D-07/D-10/D-17): recompute + missed-fire recovery + re-arm. No directBoot handling. -->
+        <receiver
+            android:name=".system.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- M3 STEP 6: Done/Snooze/Skip notification actions. -->
+        <receiver
+            android:name=".system.NotificationActionReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

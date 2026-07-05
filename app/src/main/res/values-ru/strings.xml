@@ -147,6 +147,32 @@
     <string name="settings_section_backup">Резервное копирование</string>
     <string name="settings_auto_backup">Автоматическое резервное копирование</string>
     <string name="settings_auto_backup_subtitle">Будет доступно после M5</string>
+
+    <!-- Alarms & notifications (M3 STEP 7) -->
+    <string name="settings_section_alarms_notifications">Будильники и уведомления</string>
+    <string name="settings_notifications_permission">Разрешение на уведомления</string>
+    <string name="settings_notifications_granted">Предоставлено</string>
+    <string name="settings_notifications_not_granted">Не предоставлено — нажмите, чтобы разрешить</string>
     <string name="settings_exact_alarms">Точные будильники</string>
-    <string name="settings_exact_alarms_subtitle">Будет доступно после M3</string>
+    <string name="settings_exact_alarms_subtitle">Использует точное время для напоминаний (может потребоваться доп. разрешение)</string>
+    <string name="settings_exact_alarms_needs_grant">Нажмите, чтобы разрешить в настройках системы</string>
+    <string name="settings_battery_optimization">Оптимизация батареи</string>
+    <string name="settings_battery_optimization_ignored">Без ограничений</string>
+    <string name="settings_battery_optimization_restricted">Ограничено — нажмите, чтобы разрешить фоновые будильники</string>
+    <string name="settings_default_snooze_duration">Длительность отсрочки по умолчанию (минут)</string>
+    <string name="settings_default_snooze_duration_value">Сейчас: %1$s</string>
+
+    <!-- Notifications (M3) -->
+    <string name="channel_reminders_name">Напоминания</string>
+    <string name="channel_reminders_description">Напоминания о задачах и событиях</string>
+    <string name="channel_nag_name">Повторяющиеся напоминания</string>
+    <string name="channel_nag_description">Напоминания, повторяющиеся до выполнения</string>
+    <string name="channel_overdue_summary_name">Сводка просроченных</string>
+    <string name="channel_overdue_summary_description">Сводка напоминаний, пропущенных пока устройство было выключено или спало</string>
+    <plurals name="overdue_summary_title">
+        <item quantity="one">%d просроченное напоминание</item>
+        <item quantity="few">%d просроченных напоминания</item>
+        <item quantity="many">%d просроченных напоминаний</item>
+        <item quantity="other">%d просроченных напоминания</item>
+    </plurals>
 </resources>

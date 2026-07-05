@@ -1,10 +1,13 @@
 package com.shuremind.testutil
 
 import com.shuremind.data.entity.CompletionLogEntity
+import com.shuremind.data.entity.ReminderRuleEntity
 import com.shuremind.data.entity.TagEntity
 import com.shuremind.data.entity.TaskEntity
 import com.shuremind.data.repo.AppSettings
 import com.shuremind.data.repo.CompletionRepository
+import com.shuremind.data.repo.DeliveryWatermarkRepository
+import com.shuremind.data.repo.ReminderRuleRepository
 import com.shuremind.data.repo.SettingsRepository
 import com.shuremind.data.repo.TagRepository
 import com.shuremind.data.repo.TaskRepository
@@ -153,9 +156,15 @@ class FakeTagRepository : TagRepository {
 }
 
 class FakeCompletionRepository : CompletionRepository {
-    override suspend fun recordCompletion(entry: CompletionLogEntity, now: Long) = Unit
+    val recorded: MutableList<CompletionLogEntity> = mutableListOf()
+
+    override suspend fun recordCompletion(entry: CompletionLogEntity, now: Long) {
+        recorded += entry
+    }
+
     override fun observeForTask(taskId: String): Flow<List<CompletionLogEntity>> = flowOf(emptyList())
-    override suspend fun getLastByAction(taskId: String, action: CompletionAction): CompletionLogEntity? = null
+    override suspend fun getLastByAction(taskId: String, action: CompletionAction): CompletionLogEntity? =
+        recorded.filter { it.taskId == taskId && it.action == action }.maxByOrNull { it.completedAt }
     override suspend fun completeTask(task: TaskEntity, action: CompletionAction, now: Long, zone: ZoneId) = Unit
 }
 
@@ -182,5 +191,34 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setDefaultReminderOffsets(type: TaskType, offsets: List<String>) {
         state.update { it.copy(defaultReminderOffsets = it.defaultReminderOffsets + (type to offsets)) }
+    }
+
+    override suspend fun setDefaultSnoozeDuration(duration: Duration) {
+        state.update { it.copy(defaultSnoozeDuration = duration) }
+    }
+
+    override suspend fun setExactAlarmsOptIn(optIn: Boolean) {
+        state.update { it.copy(exactAlarmsOptIn = optIn) }
+    }
+}
+
+class FakeDeliveryWatermarkRepository(initial: Long = 0L) : DeliveryWatermarkRepository {
+    private var value: Long = initial
+
+    override suspend fun get(): Long = value
+
+    override suspend fun advanceTo(instant: Long) {
+        value = instant
+    }
+}
+
+class FakeReminderRuleRepository(initial: Map<String, List<String>> = emptyMap()) : ReminderRuleRepository {
+    private val offsetsByTaskId = initial.toMutableMap()
+
+    override suspend fun getForTask(taskId: String): List<ReminderRuleEntity> =
+        offsetsByTaskId[taskId].orEmpty().map { ReminderRuleEntity(id = "$taskId-$it", taskId = taskId, offsetIso = it) }
+
+    override suspend fun setForTask(taskId: String, offsetIsos: List<String>) {
+        offsetsByTaskId[taskId] = offsetIsos
     }
 }

@@ -141,6 +141,30 @@
     <string name="settings_section_backup">Резервно копие</string>
     <string name="settings_auto_backup">Автоматично резервно копие</string>
     <string name="settings_auto_backup_subtitle">Достъпно след M5</string>
+
+    <!-- Alarms & notifications (M3 STEP 7) -->
+    <string name="settings_section_alarms_notifications">Аларми и известия</string>
+    <string name="settings_notifications_permission">Разрешение за известия</string>
+    <string name="settings_notifications_granted">Предоставено</string>
+    <string name="settings_notifications_not_granted">Не е предоставено — докоснете, за да разрешите</string>
     <string name="settings_exact_alarms">Точни аларми</string>
-    <string name="settings_exact_alarms_subtitle">Достъпно след M3</string>
+    <string name="settings_exact_alarms_subtitle">Използва точно време за напомнянията (може да изисква допълнително разрешение)</string>
+    <string name="settings_exact_alarms_needs_grant">Докоснете, за да разрешите в системните настройки</string>
+    <string name="settings_battery_optimization">Оптимизация на батерията</string>
+    <string name="settings_battery_optimization_ignored">Без ограничение</string>
+    <string name="settings_battery_optimization_restricted">Ограничено — докоснете, за да разрешите фонови аларми</string>
+    <string name="settings_default_snooze_duration">Продължителност на отлагане по подразбиране (минути)</string>
+    <string name="settings_default_snooze_duration_value">Текущо: %1$s</string>
+
+    <!-- Notifications (M3) -->
+    <string name="channel_reminders_name">Напомняния</string>
+    <string name="channel_reminders_description">Напомняния за задачи и събития</string>
+    <string name="channel_nag_name">Повтарящи се напомняния</string>
+    <string name="channel_nag_description">Напомняния, които се повтарят до изпълнение</string>
+    <string name="channel_overdue_summary_name">Обобщение на просрочени</string>
+    <string name="channel_overdue_summary_description">Обобщение на напомняния, пропуснати докато устройството е било изключено или в сън</string>
+    <plurals name="overdue_summary_title">
+        <item quantity="one">%d просрочено напомняне</item>
+        <item quantity="other">%d просрочени напомняния</item>
+    </plurals>
 </resources>

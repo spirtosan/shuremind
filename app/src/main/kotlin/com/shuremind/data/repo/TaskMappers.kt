@@ -1,11 +1,16 @@
 package com.shuremind.data.repo
 
 import com.shuremind.data.entity.TaskEntity
+import com.shuremind.engine.FireInstantEngine
+import com.shuremind.engine.TaskFireInput
 import com.shuremind.engine.TaskSchedule
 import com.shuremind.engine.TaskType
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 /** Types whose Task stays ACTIVE and gets a recomputed next_fire_at after Done/Skip (DATA_MODEL.md "status"). */
 val RECURRING_TYPES: Set<TaskType> = setOf(
@@ -54,3 +59,14 @@ fun TaskEntity.toSchedule(): TaskSchedule = TaskSchedule(
     meterInterval = meterInterval,
     lastDoneMeter = lastDoneMeter
 )
+
+/** Bridges the Room entity to the engine's Room/Android-free FireInstantEngine input (M3 scheduling). */
+fun TaskEntity.toFireInput(zone: ZoneId, reminderOffsets: List<String>, lastDoneAt: ZonedDateTime?): TaskFireInput =
+    TaskFireInput(
+        taskId = id,
+        schedule = toSchedule(),
+        createdAt = Instant.ofEpochMilli(createdAt).atZone(zone),
+        lastDoneAt = lastDoneAt,
+        snoozedUntil = snoozedUntil?.let { Instant.ofEpochMilli(it).atZone(zone) },
+        reminderOffsets = if (type in FireInstantEngine.LEAD_REMINDER_TYPES) reminderOffsets else emptyList()
+    )

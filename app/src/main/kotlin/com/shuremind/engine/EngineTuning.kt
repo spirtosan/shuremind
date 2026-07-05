@@ -40,6 +40,14 @@ object EngineTuning {
     )
     val OVERDUE_ESCALATION_INTERVAL: Duration = Duration.ofHours(4)
 
+    // Concrete escalation slot clock times (DATA_MODEL.md "Deadline escalation" / CLAUDE.md M3 spec).
+    // <=14d uses DEFAULT_ALL_DAY_TIME (or the user's configured default-all-day-time from Settings);
+    // <=7d and <=2d have fixed multi-slot clock times; overdue steps every OVERDUE_ESCALATION_INTERVAL
+    // starting from the user's configured quiet-hours end (see DeadlineEscalationEngine).
+    val ESCALATION_TIMES_WITHIN_7D: List<LocalTime> = listOf(LocalTime.of(9, 0), LocalTime.of(18, 0))
+    val ESCALATION_TIMES_WITHIN_2D: List<LocalTime> =
+        listOf(LocalTime.of(9, 0), LocalTime.of(14, 0), LocalTime.of(19, 0))
+
     // --- Snooze presets (Settings, DATA_MODEL.md) ---
     val SNOOZE_PRESETS: List<Duration> = listOf(
         Duration.ofHours(1),

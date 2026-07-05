@@ -7,10 +7,10 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: **M2 complete → ready for M3 (alarms & notifications)**
-- Next concrete step: M3 with Claude Code — scheduler (single-next-alarm per D-07), boot receiver (+ TIME_CHANGED, MY_PACKAGE_REPLACED per Session 1 addendum), notification channels/actions (Done/Snooze/Skip wired to existing repo methods), quiet hours, missed-alarm recovery, permission onboarding, exact-alarm opt-in (Section-E branch per D-08); remember meter-due is recompute-detected, never alarm-fired (Session 2 note).
-- Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — if stale-data flash appears when switching tasks, fix in M3 polish.
-- Open questions: final app/package name (placeholder `com.shuremind`); confirm minSdk 26 on both target phones.
+- Phase: **M3 complete → ready for M4 (advanced behaviors)**
+- Next concrete step: M4 with Claude Code — WINDOW date-learned conversion, CONSUMABLE restock flow, meter readings screen + monthly km prompt, weekly review screen (SOMEDAY + stale items). Deadline escalation curve already shipped in M3 (moved up, see PROJECT.md).
+- Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
+- Open questions: final app/package name (placeholder `com.shuremind`); confirm minSdk 26 on both target phones; app has no launcher icon resource yet (pre-existing gap, not M3 scope).
 
 ## Session 1 — 2026-07-04 (Fable, planning)
 - Reviewed Gemini's architecture plan; kept offline-first/Room/WorkManager core, added recurrence as day-1 concern, time-growing priority, deferred geofencing, flagged Android 13/14 permission reality.
@@ -40,3 +40,13 @@ _Project memory across chat sessions._
 - Mid-run refactor: repositories converted to interfaces with Room*/DataStore* implementations to enable fake-repo ViewModel unit tests. Navigation is a manual sealed interface (no navigation-compose). material-icons-core added (→ D-22 ratifies both rulings).
 - Result: 46 files changed, 82 tests green (75 engine + 7 MainViewModel), assembleDebug clean. Remaining lint error is local.properties only (gitignored, machine path quirk) — ignore.
 - Next: M3.
+
+## Session 4 — 2026-07-05 (Claude Code, M3)
+- Claude Code executed M3: FireInstantEngine (pure Kotlin) combining occurrence/reminder-lead/escalation/snooze/quiet-hours into one cursor-based "next fire" oracle, reused unchanged for both alarm-arming (`globalNext`) and missed-fire recovery (`missedSince`) — 38 new tests incl. Bulgaria DST (both directions, via the new date-based reminder-offset arithmetic), quiet-hour boundaries, escalation transitions, snooze-into-quiet-hours, a CONSUMABLE daily-follow-up recovery chain.
+- D-23 delivered watermark (DataStore `last_handled_at`) implemented via `DeliveryWatermarkRepository`; AlarmScheduler (Section-E exact/inexact branch) + `RecomputeAndRearm` single entry point wired from AlarmReceiver, BootReceiver (BOOT_COMPLETED/TIME_SET/TIMEZONE_CHANGED/MY_PACKAGE_REPLACED), MainActivity.onStart, the daily HousekeepingWorker, and repository-level hooks (`ScheduleChangeNotifier`) on task/completion/settings writes — guarded by a non-reentrant Mutex in `RecomputeAndRearm` since its own writes flow through those same hooked repositories.
+- Notifications: reminders/nag/overdue_summary channels, per-occurrence Done/Snooze(+Skip for recurring) actions via `NotificationActionReceiver`, D-24 default-snooze-duration setting, grouped overdue summary with RU 4-form plurals, tap-to-task-detail (MainActivity singleTop + onNewIntent, no trampolines).
+- Permission onboarding: POST_NOTIFICATIONS runtime request on first open, exact-alarm opt-in row now live (launches ACTION_REQUEST_SCHEDULE_EXACT_ALARM when needed), battery-optimization exemption row (ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) — all graceful-degrade on denial.
+- Refactored `ReminderRuleRepository` from a concrete class to an interface (matching M2's TaskRepository/TagRepository pattern) so `RecomputeAndRearm` could be unit-tested with fakes.
+- Added `androidx.work:work-runtime-ktx` (already in the D-16 approved stack, first actual use).
+- Result: 120 tests green (82 + 38), assembleDebug clean, lintDebug clean bar the pre-existing local.properties path issue.
+- Next: M4.

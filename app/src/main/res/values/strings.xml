@@ -146,6 +146,32 @@
     <string name="settings_section_backup">Backup</string>
     <string name="settings_auto_backup">Auto-backup</string>
     <string name="settings_auto_backup_subtitle">Available after M5</string>
+
+    <!-- Alarms & notifications (M3 STEP 7) -->
+    <string name="settings_section_alarms_notifications">Alarms &amp; notifications</string>
+    <string name="settings_notifications_permission">Notification permission</string>
+    <string name="settings_notifications_granted">Granted</string>
+    <string name="settings_notifications_not_granted">Not granted — tap to enable</string>
     <string name="settings_exact_alarms">Exact alarms</string>
-    <string name="settings_exact_alarms_subtitle">Available after M3</string>
+    <string name="settings_exact_alarms_subtitle">Uses precise timing for reminders (may need an extra permission)</string>
+    <string name="settings_exact_alarms_needs_grant">Tap to grant permission in system settings</string>
+    <string name="settings_battery_optimization">Battery optimization</string>
+    <string name="settings_battery_optimization_ignored">Not restricted</string>
+    <string name="settings_battery_optimization_restricted">Restricted — tap to allow background alarms</string>
+    <string name="settings_default_snooze_duration">Default snooze duration (minutes)</string>
+    <string name="settings_default_snooze_duration_value">Currently: %1$s</string>
+
+    <!-- Notifications (M3) -->
+    <string name="channel_reminders_name">Reminders</string>
+    <string name="channel_reminders_description">Task and event reminders</string>
+    <string name="channel_nag_name">Nagging reminders</string>
+    <string name="channel_nag_description">Repeating reminders until done</string>
+    <string name="channel_overdue_summary_name">Overdue summary</string>
+    <string name="channel_overdue_summary_description">Summary of reminders missed while your device was off or asleep</string>
+    <plurals name="overdue_summary_title">
+        <item quantity="one">%d overdue reminder</item>
+        <item quantity="few">%d overdue reminders</item>
+        <item quantity="many">%d overdue reminders</item>
+        <item quantity="other">%d overdue reminders</item>
+    </plurals>
 </resources>

@@ -35,7 +35,7 @@ Extras: **quick timer** (UI shortcut creating an EVENT at now+X, e.g. washing ma
 - Multilingual UI: English, Bulgarian, Russian; language selectable in Settings (default: system). All text in string resources. (D-18)
 
 ## v2+ (explicitly deferred)
-Server sync (schema is sync-ready from day 1), budget planning, task dependencies/prerequisites, geofencing, per-occurrence editing beyond done/skip/snooze, shared lists between phones, statistics.
+Server sync (schema is sync-ready from day 1), budget planning, task dependencies/prerequisites, geofencing, per-occurrence editing beyond done/skip/snooze, shared lists between phones, statistics, per-task snooze duration override.
 
 ## Non-goals
 No accounts, no cloud, no analytics, no GMS/Firebase dependency in v1. Not a calendar replacement.
@@ -46,8 +46,8 @@ Kotlin 2.x, Jetpack Compose (Material 3), Room, DataStore (settings), AlarmManag
 ## Build phases (for Claude Code)
 - **M1** Data layer + engine: Room schema, recurrence math, priority score, run-out computation. Pure-Kotlin engine, heavily unit-tested (incl. DST cases).
 - **M2** Capture UI + main list: quick-add, type presets, toggles, sorted list, tag filters, done/snooze/skip.
-- **M3** Alarms & notifications: scheduler, boot receiver, notification channels/actions, quiet hours, missed-alarm recovery, permission onboarding.
-- **M4** Advanced behaviors: WINDOW, CONSUMABLE, meters, weekly review, escalation curve.
+- **M3** Alarms & notifications: scheduler, boot receiver, notification channels/actions, quiet hours, missed-alarm recovery, permission onboarding, deadline escalation curve.
+- **M4** Advanced behaviors: WINDOW, CONSUMABLE, meters, weekly review.
 - **M5** Import/export + auto-backup + polish.
 
 ## Acceptance test cases (the user's real life)

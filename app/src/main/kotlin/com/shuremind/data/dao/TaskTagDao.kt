@@ -6,9 +6,10 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.shuremind.data.entity.TaskTagEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface TaskTagDao {
+internal interface TaskTagDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(crossRef: TaskTagEntity)
@@ -21,4 +22,7 @@ interface TaskTagDao {
 
     @Query("SELECT task_id FROM task_tags WHERE tag_id = :tagId")
     suspend fun getTaskIdsForTag(tagId: String): List<String>
+
+    @Query("SELECT * FROM task_tags")
+    fun observeAll(): Flow<List<TaskTagEntity>>
 }

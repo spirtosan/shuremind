@@ -8,7 +8,7 @@ import com.shuremind.data.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface TagDao {
+internal interface TagDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(tag: TagEntity)

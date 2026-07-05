@@ -7,8 +7,9 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: **M1 + M1.5 complete → ready for M2 (capture UI + main list)**
-- Next concrete step: M2 with Claude Code; first M2 tasks: DI wiring so ViewModels get repos (never DAOs), Settings screen calling LanguageRepository, resolve app_language DataStore-vs-autoStoreLocales duplication (pick one source of truth, note the choice in DATA_MODEL.md).
+- Phase: **M2 complete → ready for M3 (alarms & notifications)**
+- Next concrete step: M3 with Claude Code — scheduler (single-next-alarm per D-07), boot receiver (+ TIME_CHANGED, MY_PACKAGE_REPLACED per Session 1 addendum), notification channels/actions (Done/Snooze/Skip wired to existing repo methods), quiet hours, missed-alarm recovery, permission onboarding, exact-alarm opt-in (Section-E branch per D-08); remember meter-due is recompute-detected, never alarm-fired (Session 2 note).
+- Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — if stale-data flash appears when switching tasks, fix in M3 polish.
 - Open questions: final app/package name (placeholder `com.shuremind`); confirm minSdk 26 on both target phones.
 
 ## Session 1 — 2026-07-04 (Fable, planning)
@@ -32,3 +33,10 @@ _Project memory across chat sessions._
 - Design note for M3/M4: meter-due produces no alarm instant by design — it's detected at recompute points (app open, housekeeping, new reading), not alarm-fired. Do not "fix" this.
 - New workflow rule: user never hand-edits files (→ D-20).
 - Next: M2.
+
+## Session 3 — 2026-07-05 (Fable planning + Claude Code, M2)
+- D-21 decided in planning (autoStoreLocales is the single source of truth for UI language; app_language DataStore key dropped; export reads current language at export time; works on Android 10–12 via AppCompat persistence). Turned out mostly moot in code — M1.5's LanguageRepository was already AppCompat-only; docs updated.
+- Claude Code executed M2: manual DI (AppContainer + ViewModelFactory, DAOs made internal so ViewModels can only see repositories), quick capture bar (≤2-tap plain add), sectioned main list (Overdue/Today/Upcoming/Someday) sorted by read-time priority engine, Done/Skip/Snooze wired through CompletionRepository/TaskRepository (snooze writes snoozed_until only — alarms are M3), tag filter chips, full per-type task detail/edit screen, Settings screen (language picker live; auto-backup + exact-alarms shown disabled with "available after M5/M3" notes), complete en/bg/ru strings incl. Russian 4-form plurals.
+- Mid-run refactor: repositories converted to interfaces with Room*/DataStore* implementations to enable fake-repo ViewModel unit tests. Navigation is a manual sealed interface (no navigation-compose). material-icons-core added (→ D-22 ratifies both rulings).
+- Result: 46 files changed, 82 tests green (75 engine + 7 MainViewModel), assembleDebug clean. Remaining lint error is local.properties only (gitignored, machine path quirk) — ignore.
+- Next: M3.

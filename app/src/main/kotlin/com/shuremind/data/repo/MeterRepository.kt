@@ -5,7 +5,7 @@ import com.shuremind.data.entity.MeterReadingEntity
 import kotlinx.coroutines.flow.Flow
 
 /** UI/ViewModels talk only to this repo, never MeterReadingDao directly (from M2 on). */
-class MeterRepository(private val meterReadingDao: MeterReadingDao) {
+class MeterRepository internal constructor(private val meterReadingDao: MeterReadingDao) {
 
     suspend fun record(reading: MeterReadingEntity) = meterReadingDao.insert(reading)
 

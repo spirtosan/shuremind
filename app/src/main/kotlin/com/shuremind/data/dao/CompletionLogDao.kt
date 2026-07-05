@@ -8,7 +8,7 @@ import com.shuremind.engine.CompletionAction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface CompletionLogDao {
+internal interface CompletionLogDao {
 
     // Append-only per DATA_MODEL.md: no update/delete methods.
     @Insert

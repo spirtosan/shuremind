@@ -65,7 +65,7 @@ Powers: COMPLETION-anchored recurrence, "last done" display, future stats. Never
 (id TEXT PK, meter_name TEXT, value REAL, recorded_at INTEGER). Generic: car km today, anything countable later. Monthly "log km" prompt is itself a RECURRING task the app seeds on first meter use.
 
 ## Settings (DataStore, not Room)
-quiet_hours (start/end, default 22:00–08:00), default_all_day_time (09:00), default currency (EUR), default reminder offsets per type, snooze presets (1h/4h/1d), auto_backup (on, folder URI, keep 7), exact_alarms_opt_in, app_language (system|en|bg|ru, default system).
+quiet_hours (start/end, default 22:00–08:00), default_all_day_time (09:00), default currency (EUR), default reminder offsets per type, snooze presets (1h/4h/1d), auto_backup (on, folder URI, keep 7), exact_alarms_opt_in. UI language is not a DataStore key (D-21): LanguageRepository wraps AppCompatDelegate.get/setApplicationLocales() directly, persisted by AppCompat's own autoStoreLocales.
 
 ## Priority engine (tunable constants in one file)
 `score = round(100 × (0.4×impact + 0.6×urgency_eff) / 3)` where `urgency_eff = min(3, urgency + boost)` and boost by time-to-due: >30d→0, ≤30d→+0.5, ≤14d→+1, ≤7d→+1.5, ≤2d→+2, overdue→+3. Computed at read time; never stored. SOMEDAY and far-future items sort below scored items. Ties → earlier due first.

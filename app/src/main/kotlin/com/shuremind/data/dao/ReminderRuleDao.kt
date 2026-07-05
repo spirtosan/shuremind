@@ -8,7 +8,7 @@ import androidx.room.Query
 import com.shuremind.data.entity.ReminderRuleEntity
 
 @Dao
-interface ReminderRuleDao {
+internal interface ReminderRuleDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(rule: ReminderRuleEntity)

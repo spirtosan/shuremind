@@ -1,4 +1,146 @@
 <resources>
     <!-- Brand name, not translated. -->
     <string name="app_name">ShuRemind</string>
+
+    <!-- Common -->
+    <string name="nav_back">Назад</string>
+    <string name="action_settings">Настройки</string>
+
+    <!-- Quick capture (main screen) -->
+    <string name="capture_hint">Добави задача…</string>
+    <string name="capture_save">Запази</string>
+    <string name="capture_expand">Още опции</string>
+    <string name="capture_collapse">По-малко опции</string>
+    <string name="capture_type_label">Тип</string>
+    <string name="capture_impact_label">Значимост</string>
+    <string name="capture_urgency_label">Спешност</string>
+    <string name="capture_tags_label">Етикети</string>
+    <string name="capture_tag_input_hint">Име на етикет</string>
+    <string name="capture_add_tag">Добави етикет</string>
+    <string name="capture_remove_tag">Премахни етикет</string>
+    <string name="capture_cost_label">Разход</string>
+    <string name="capture_pick_date">Избери дата</string>
+    <string name="capture_pick_time">Избери час</string>
+    <string name="capture_clear_date">Изчисти дата</string>
+    <string name="capture_clear_time">Изчисти час</string>
+
+    <!-- Task types -->
+    <string name="task_type_event">Събитие</string>
+    <string name="task_type_anniversary">Годишнина</string>
+    <string name="task_type_deadline">Краен срок</string>
+    <string name="task_type_window">Прозорец</string>
+    <string name="task_type_nag">Напомняне</string>
+    <string name="task_type_recurring">Повтарящо се</string>
+    <string name="task_type_consumable">Консуматив</string>
+    <string name="task_type_someday">Някой ден</string>
+
+    <!-- Tag filter -->
+    <string name="tag_filter_all">Всички</string>
+
+    <!-- Main list sections -->
+    <string name="section_overdue">Просрочени</string>
+    <string name="section_today">Днес</string>
+    <string name="section_upcoming">Предстоящи</string>
+    <string name="section_someday">Някой ден</string>
+    <string name="list_empty">Все още няма нищо тук</string>
+
+    <!-- Task item actions -->
+    <string name="action_done">Готово</string>
+    <string name="action_skip">Пропусни</string>
+    <string name="action_snooze">Отложи</string>
+    <string name="snoozed_until_label">Отложено до %1$s</string>
+
+    <plurals name="snooze_minutes">
+        <item quantity="one">след %d минута</item>
+        <item quantity="other">след %d минути</item>
+    </plurals>
+    <plurals name="snooze_hours">
+        <item quantity="one">след %d час</item>
+        <item quantity="other">след %d часа</item>
+    </plurals>
+    <plurals name="snooze_days">
+        <item quantity="one">след %d ден</item>
+        <item quantity="other">след %d дни</item>
+    </plurals>
+
+    <!-- Task detail / edit screen -->
+    <string name="detail_title">Редактирай задача</string>
+    <string name="detail_save">Запази</string>
+    <string name="detail_delete">Изтрий</string>
+    <string name="detail_delete_confirm_title">Да изтрия ли тази задача?</string>
+    <string name="detail_delete_confirm_message">Това действие е необратимо.</string>
+    <string name="detail_delete_confirm_confirm">Изтрий</string>
+    <string name="detail_delete_confirm_cancel">Отказ</string>
+    <string name="detail_section_common">Детайли</string>
+    <string name="detail_section_schedule">График</string>
+    <string name="detail_section_recurrence">Повторение</string>
+    <string name="detail_section_consumable">Наличност</string>
+    <string name="detail_section_meter">Брояч</string>
+    <string name="detail_section_tags">Етикети</string>
+
+    <string name="field_title">Заглавие</string>
+    <string name="field_notes">Бележки</string>
+    <string name="field_impact">Значимост</string>
+    <string name="field_urgency">Спешност</string>
+    <string name="field_cost">Очакван разход</string>
+    <string name="field_due_date">Дата на падеж</string>
+    <string name="field_due_time">Час (празно = цял ден)</string>
+    <string name="field_not_before">Не преди</string>
+    <string name="field_rec_freq">Честота</string>
+    <string name="field_rec_interval">На всеки (N)</string>
+    <string name="field_rec_anchor">Отправна точка</string>
+    <string name="field_rec_days_of_week">Дни от седмицата</string>
+    <string name="field_rec_day_of_month">Ден от месеца</string>
+    <string name="field_rec_times_of_day">Часове през деня</string>
+    <string name="field_rec_add_time">Добави час</string>
+    <string name="field_rec_end_date">Крайна дата (по избор)</string>
+    <string name="field_nag_interval_hours">Повтаряй на всеки (часове)</string>
+    <string name="field_stock_qty">Налично количество</string>
+    <string name="field_dose_per_intake">Доза на прием</string>
+    <string name="field_restock_lead_days">Напомни преди изчерпване (дни)</string>
+    <string name="field_stock_recorded_at_value">Наличност записана на: %1$s</string>
+    <string name="field_meter_name">Име на брояч</string>
+    <string name="field_meter_interval">Интервал на брояч</string>
+    <string name="field_last_done_meter">Показание при последно изпълнение</string>
+    <string name="field_window_hint">Насока (напр. обикновено сеп.–ноем.)</string>
+
+    <string name="rec_freq_daily">Дневно</string>
+    <string name="rec_freq_weekly">Седмично</string>
+    <string name="rec_freq_monthly">Месечно</string>
+    <string name="rec_freq_yearly">Годишно</string>
+    <string name="rec_anchor_calendar">Календар (фиксиран график)</string>
+    <string name="rec_anchor_completion">Изпълнение (от последно готово)</string>
+
+    <string name="day_mo">Пон</string>
+    <string name="day_tu">Вт</string>
+    <string name="day_we">Ср</string>
+    <string name="day_th">Чет</string>
+    <string name="day_fr">Пет</string>
+    <string name="day_sa">Съб</string>
+    <string name="day_su">Нед</string>
+
+    <string name="reminder_offset_add">Добави напомняне</string>
+    <string name="reminder_offset_hint">напр. P14D, P7D, P1D, PT2H</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_language">Език</string>
+    <string name="lang_system">По подразбиране на системата</string>
+    <string name="lang_en">Английски</string>
+    <string name="lang_bg">Български</string>
+    <string name="lang_ru">Руски</string>
+    <string name="settings_section_quiet_hours">Тихи часове</string>
+    <string name="settings_quiet_hours_start_value">Начало: %1$s</string>
+    <string name="settings_quiet_hours_end_value">Край: %1$s</string>
+    <string name="settings_section_defaults">Стойности по подразбиране</string>
+    <string name="settings_default_all_day_time_value">Час за напомняния цял ден: %1$s</string>
+    <string name="settings_currency">Валута</string>
+    <string name="settings_section_snooze">Отлагания</string>
+    <string name="settings_add_snooze_preset">Добави отлагане (минути)</string>
+    <string name="settings_section_reminder_offsets">Напомняния по подразбиране</string>
+    <string name="settings_section_backup">Резервно копие</string>
+    <string name="settings_auto_backup">Автоматично резервно копие</string>
+    <string name="settings_auto_backup_subtitle">Достъпно след M5</string>
+    <string name="settings_exact_alarms">Точни аларми</string>
+    <string name="settings_exact_alarms_subtitle">Достъпно след M3</string>
 </resources>

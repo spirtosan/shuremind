@@ -31,12 +31,12 @@ import com.shuremind.data.entity.TaskTagEntity
 )
 @TypeConverters(EnumConverters::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun taskDao(): TaskDao
-    abstract fun reminderRuleDao(): ReminderRuleDao
-    abstract fun tagDao(): TagDao
-    abstract fun taskTagDao(): TaskTagDao
-    abstract fun completionLogDao(): CompletionLogDao
-    abstract fun meterReadingDao(): MeterReadingDao
+    internal abstract fun taskDao(): TaskDao
+    internal abstract fun reminderRuleDao(): ReminderRuleDao
+    internal abstract fun tagDao(): TagDao
+    internal abstract fun taskTagDao(): TaskTagDao
+    internal abstract fun completionLogDao(): CompletionLogDao
+    internal abstract fun meterReadingDao(): MeterReadingDao
 
     companion object {
         const val DATABASE_NAME = "shuremind.db"

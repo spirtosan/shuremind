@@ -7,7 +7,7 @@ import com.shuremind.data.entity.MeterReadingEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface MeterReadingDao {
+internal interface MeterReadingDao {
 
     @Insert
     suspend fun insert(reading: MeterReadingEntity)

@@ -1,3 +1,151 @@
 <resources>
     <string name="app_name">ShuRemind</string>
+
+    <!-- Common -->
+    <string name="nav_back">Back</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- Quick capture (main screen) -->
+    <string name="capture_hint">Add a task…</string>
+    <string name="capture_save">Save</string>
+    <string name="capture_expand">More options</string>
+    <string name="capture_collapse">Fewer options</string>
+    <string name="capture_type_label">Type</string>
+    <string name="capture_impact_label">Impact</string>
+    <string name="capture_urgency_label">Urgency</string>
+    <string name="capture_tags_label">Tags</string>
+    <string name="capture_tag_input_hint">Tag name</string>
+    <string name="capture_add_tag">Add tag</string>
+    <string name="capture_remove_tag">Remove tag</string>
+    <string name="capture_cost_label">Cost</string>
+    <string name="capture_pick_date">Pick date</string>
+    <string name="capture_pick_time">Pick time</string>
+    <string name="capture_clear_date">Clear date</string>
+    <string name="capture_clear_time">Clear time</string>
+
+    <!-- Task types -->
+    <string name="task_type_event">Event</string>
+    <string name="task_type_anniversary">Anniversary</string>
+    <string name="task_type_deadline">Deadline</string>
+    <string name="task_type_window">Window</string>
+    <string name="task_type_nag">Nag</string>
+    <string name="task_type_recurring">Recurring</string>
+    <string name="task_type_consumable">Consumable</string>
+    <string name="task_type_someday">Someday</string>
+
+    <!-- Tag filter -->
+    <string name="tag_filter_all">All</string>
+
+    <!-- Main list sections -->
+    <string name="section_overdue">Overdue</string>
+    <string name="section_today">Today</string>
+    <string name="section_upcoming">Upcoming</string>
+    <string name="section_someday">Someday</string>
+    <string name="list_empty">Nothing here yet</string>
+
+    <!-- Task item actions -->
+    <string name="action_done">Done</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_snooze">Snooze</string>
+    <string name="snoozed_until_label">Snoozed until %1$s</string>
+
+    <plurals name="snooze_minutes">
+        <item quantity="one">in %d minute</item>
+        <item quantity="few">in %d minutes</item>
+        <item quantity="many">in %d minutes</item>
+        <item quantity="other">in %d minutes</item>
+    </plurals>
+    <plurals name="snooze_hours">
+        <item quantity="one">in %d hour</item>
+        <item quantity="few">in %d hours</item>
+        <item quantity="many">in %d hours</item>
+        <item quantity="other">in %d hours</item>
+    </plurals>
+    <plurals name="snooze_days">
+        <item quantity="one">in %d day</item>
+        <item quantity="few">in %d days</item>
+        <item quantity="many">in %d days</item>
+        <item quantity="other">in %d days</item>
+    </plurals>
+
+    <!-- Task detail / edit screen -->
+    <string name="detail_title">Edit task</string>
+    <string name="detail_save">Save</string>
+    <string name="detail_delete">Delete</string>
+    <string name="detail_delete_confirm_title">Delete this task?</string>
+    <string name="detail_delete_confirm_message">This can\'t be undone.</string>
+    <string name="detail_delete_confirm_confirm">Delete</string>
+    <string name="detail_delete_confirm_cancel">Cancel</string>
+    <string name="detail_section_common">Details</string>
+    <string name="detail_section_schedule">Schedule</string>
+    <string name="detail_section_recurrence">Recurrence</string>
+    <string name="detail_section_consumable">Stock</string>
+    <string name="detail_section_meter">Meter</string>
+    <string name="detail_section_tags">Tags</string>
+
+    <string name="field_title">Title</string>
+    <string name="field_notes">Notes</string>
+    <string name="field_impact">Impact</string>
+    <string name="field_urgency">Urgency</string>
+    <string name="field_cost">Estimated cost</string>
+    <string name="field_due_date">Due date</string>
+    <string name="field_due_time">Due time (empty = all-day)</string>
+    <string name="field_not_before">Not before</string>
+    <string name="field_rec_freq">Frequency</string>
+    <string name="field_rec_interval">Every (N)</string>
+    <string name="field_rec_anchor">Anchor</string>
+    <string name="field_rec_days_of_week">Days of week</string>
+    <string name="field_rec_day_of_month">Day of month</string>
+    <string name="field_rec_times_of_day">Times of day</string>
+    <string name="field_rec_add_time">Add time</string>
+    <string name="field_rec_end_date">End date (optional)</string>
+    <string name="field_nag_interval_hours">Repeat every (hours)</string>
+    <string name="field_stock_qty">Stock quantity</string>
+    <string name="field_dose_per_intake">Dose per intake</string>
+    <string name="field_restock_lead_days">Remind before run-out (days)</string>
+    <string name="field_stock_recorded_at_value">Stock last recorded: %1$s</string>
+    <string name="field_meter_name">Meter name</string>
+    <string name="field_meter_interval">Meter interval</string>
+    <string name="field_last_done_meter">Last done meter reading</string>
+    <string name="field_window_hint">Hint (e.g. usually Sep–Nov)</string>
+
+    <string name="rec_freq_daily">Daily</string>
+    <string name="rec_freq_weekly">Weekly</string>
+    <string name="rec_freq_monthly">Monthly</string>
+    <string name="rec_freq_yearly">Yearly</string>
+    <string name="rec_anchor_calendar">Calendar (fixed schedule)</string>
+    <string name="rec_anchor_completion">Completion (since last done)</string>
+
+    <string name="day_mo">Mon</string>
+    <string name="day_tu">Tue</string>
+    <string name="day_we">Wed</string>
+    <string name="day_th">Thu</string>
+    <string name="day_fr">Fri</string>
+    <string name="day_sa">Sat</string>
+    <string name="day_su">Sun</string>
+
+    <string name="reminder_offset_add">Add reminder</string>
+    <string name="reminder_offset_hint">e.g. P14D, P7D, P1D, PT2H</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_language">Language</string>
+    <string name="lang_system">System default</string>
+    <string name="lang_en">English</string>
+    <string name="lang_bg">Bulgarian</string>
+    <string name="lang_ru">Russian</string>
+    <string name="settings_section_quiet_hours">Quiet hours</string>
+    <string name="settings_quiet_hours_start_value">Start: %1$s</string>
+    <string name="settings_quiet_hours_end_value">End: %1$s</string>
+    <string name="settings_section_defaults">Defaults</string>
+    <string name="settings_default_all_day_time_value">Default all-day reminder time: %1$s</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_section_snooze">Snooze presets</string>
+    <string name="settings_add_snooze_preset">Add preset (minutes)</string>
+    <string name="settings_section_reminder_offsets">Default reminder lead times</string>
+    <string name="settings_section_backup">Backup</string>
+    <string name="settings_auto_backup">Auto-backup</string>
+    <string name="settings_auto_backup_subtitle">Available after M5</string>
+    <string name="settings_exact_alarms">Exact alarms</string>
+    <string name="settings_exact_alarms_subtitle">Available after M3</string>
 </resources>

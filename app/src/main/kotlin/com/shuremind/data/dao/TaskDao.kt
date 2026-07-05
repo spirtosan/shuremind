@@ -11,7 +11,7 @@ import com.shuremind.engine.TaskType
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface TaskDao {
+internal interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(task: TaskEntity)

@@ -15,6 +15,8 @@ internal class DataStoreMeterSeedRepository(private val dataStore: DataStore<Pre
         dataStore.edit { prefs -> prefs[SEEDED_METER_NAMES] = (prefs[SEEDED_METER_NAMES] ?: emptySet()) + meterName }
     }
 
+    override suspend fun getAllSeeded(): Set<String> = dataStore.data.first()[SEEDED_METER_NAMES] ?: emptySet()
+
     private companion object {
         val SEEDED_METER_NAMES = stringSetPreferencesKey("seeded_meter_names")
     }

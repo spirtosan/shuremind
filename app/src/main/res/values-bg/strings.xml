@@ -140,7 +140,48 @@
     <string name="settings_section_reminder_offsets">Напомняния по подразбиране</string>
     <string name="settings_section_backup">Резервно копие</string>
     <string name="settings_auto_backup">Автоматично резервно копие</string>
-    <string name="settings_auto_backup_subtitle">Достъпно след M5</string>
+    <string name="settings_auto_backup_subtitle">Дневно резервно копие в избраната от вас папка, пази последните 7</string>
+    <string name="settings_backup_folder_label">Папка за резервни копия:</string>
+    <string name="settings_backup_folder_not_set">Не е зададена — докоснете, за да изберете</string>
+    <string name="settings_backup_folder_value">%1$s</string>
+    <string name="settings_backup_now">Резервно копие сега</string>
+    <string name="settings_backup_now_success">Резервното копие е запазено</string>
+    <string name="settings_backup_now_failure">Резервното копие не бе създадено</string>
+    <string name="settings_backup_no_folder">Първо изберете папка за резервни копия</string>
+    <string name="settings_export_data">Изнасяне на данни</string>
+    <string name="settings_export_success">Изнасянето е запазено</string>
+    <string name="settings_export_failure">Изнасянето не бе успешно</string>
+    <string name="settings_import_data">Внасяне на данни</string>
+    <string name="settings_import_confirm_title">Замяна на всички данни?</string>
+    <string name="settings_import_confirm_message">Това ще замени всичко на устройството с данните от файла. Действието е необратимо.</string>
+    <string name="settings_import_confirm_confirm">Внасяне</string>
+    <string name="settings_import_confirm_cancel">Отказ</string>
+    <string name="settings_import_success">Внасянето завърши</string>
+    <string name="settings_import_failure">Внасянето не бе успешно</string>
+    <string name="settings_import_error_malformed">Този файл не е валидно резервно копие на ShuRemind</string>
+    <string name="settings_import_error_unsupported_schema">Това резервно копие е направено с по-нова версия на приложението</string>
+    <string name="settings_import_error_safety_export_failed">Не бе възможно да се запази предпазно копие — внасянето е отменено</string>
+
+    <plurals name="import_count_tasks">
+        <item quantity="one">%d задача</item>
+        <item quantity="other">%d задачи</item>
+    </plurals>
+    <plurals name="import_count_reminder_rules">
+        <item quantity="one">%d напомняне</item>
+        <item quantity="other">%d напомняния</item>
+    </plurals>
+    <plurals name="import_count_tags">
+        <item quantity="one">%d таг</item>
+        <item quantity="other">%d тага</item>
+    </plurals>
+    <plurals name="import_count_completions">
+        <item quantity="one">%d запис в дневника</item>
+        <item quantity="other">%d записа в дневника</item>
+    </plurals>
+    <plurals name="import_count_meter_readings">
+        <item quantity="one">%d показание на брояч</item>
+        <item quantity="other">%d показания на брояч</item>
+    </plurals>
 
     <!-- Alarms & notifications (M3 STEP 7) -->
     <string name="settings_section_alarms_notifications">Аларми и известия</string>

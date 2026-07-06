@@ -145,7 +145,58 @@
     <string name="settings_section_reminder_offsets">Default reminder lead times</string>
     <string name="settings_section_backup">Backup</string>
     <string name="settings_auto_backup">Auto-backup</string>
-    <string name="settings_auto_backup_subtitle">Available after M5</string>
+    <string name="settings_auto_backup_subtitle">Daily backup to your chosen folder, keeps the last 7</string>
+    <string name="settings_backup_folder_label">Backup folder:</string>
+    <string name="settings_backup_folder_not_set">Not set — tap to choose</string>
+    <string name="settings_backup_folder_value">%1$s</string>
+    <string name="settings_backup_now">Back up now</string>
+    <string name="settings_backup_now_success">Backup saved</string>
+    <string name="settings_backup_now_failure">Backup failed</string>
+    <string name="settings_backup_no_folder">Choose a backup folder first</string>
+    <string name="settings_export_data">Export data</string>
+    <string name="settings_export_success">Export saved</string>
+    <string name="settings_export_failure">Export failed</string>
+    <string name="settings_import_data">Import data</string>
+    <string name="settings_import_confirm_title">Replace all data?</string>
+    <string name="settings_import_confirm_message">This will replace everything on this device with the imported file. This can\'t be undone.</string>
+    <string name="settings_import_confirm_confirm">Import</string>
+    <string name="settings_import_confirm_cancel">Cancel</string>
+    <string name="settings_import_success">Import complete</string>
+    <string name="settings_import_failure">Import failed</string>
+    <string name="settings_import_error_malformed">This file isn\'t a valid ShuRemind backup</string>
+    <string name="settings_import_error_unsupported_schema">This backup was made by a newer version of the app</string>
+    <string name="settings_import_error_safety_export_failed">Couldn\'t save a safety copy — import cancelled</string>
+
+    <plurals name="import_count_tasks">
+        <item quantity="one">%d task</item>
+        <item quantity="few">%d tasks</item>
+        <item quantity="many">%d tasks</item>
+        <item quantity="other">%d tasks</item>
+    </plurals>
+    <plurals name="import_count_reminder_rules">
+        <item quantity="one">%d reminder</item>
+        <item quantity="few">%d reminders</item>
+        <item quantity="many">%d reminders</item>
+        <item quantity="other">%d reminders</item>
+    </plurals>
+    <plurals name="import_count_tags">
+        <item quantity="one">%d tag</item>
+        <item quantity="few">%d tags</item>
+        <item quantity="many">%d tags</item>
+        <item quantity="other">%d tags</item>
+    </plurals>
+    <plurals name="import_count_completions">
+        <item quantity="one">%d completion log entry</item>
+        <item quantity="few">%d completion log entries</item>
+        <item quantity="many">%d completion log entries</item>
+        <item quantity="other">%d completion log entries</item>
+    </plurals>
+    <plurals name="import_count_meter_readings">
+        <item quantity="one">%d meter reading</item>
+        <item quantity="few">%d meter readings</item>
+        <item quantity="many">%d meter readings</item>
+        <item quantity="other">%d meter readings</item>
+    </plurals>
 
     <!-- Alarms & notifications (M3 STEP 7) -->
     <string name="settings_section_alarms_notifications">Alarms &amp; notifications</string>

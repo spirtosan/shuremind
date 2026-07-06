@@ -146,7 +146,58 @@
     <string name="settings_section_reminder_offsets">Напоминания по умолчанию</string>
     <string name="settings_section_backup">Резервное копирование</string>
     <string name="settings_auto_backup">Автоматическое резервное копирование</string>
-    <string name="settings_auto_backup_subtitle">Будет доступно после M5</string>
+    <string name="settings_auto_backup_subtitle">Ежедневная копия в выбранную папку, хранятся последние 7</string>
+    <string name="settings_backup_folder_label">Папка для резервных копий:</string>
+    <string name="settings_backup_folder_not_set">Не задана — нажмите, чтобы выбрать</string>
+    <string name="settings_backup_folder_value">%1$s</string>
+    <string name="settings_backup_now">Создать резервную копию сейчас</string>
+    <string name="settings_backup_now_success">Резервная копия сохранена</string>
+    <string name="settings_backup_now_failure">Не удалось создать резервную копию</string>
+    <string name="settings_backup_no_folder">Сначала выберите папку для резервных копий</string>
+    <string name="settings_export_data">Экспорт данных</string>
+    <string name="settings_export_success">Экспорт сохранён</string>
+    <string name="settings_export_failure">Экспорт не удался</string>
+    <string name="settings_import_data">Импорт данных</string>
+    <string name="settings_import_confirm_title">Заменить все данные?</string>
+    <string name="settings_import_confirm_message">Это заменит все данные на устройстве данными из файла. Действие необратимо.</string>
+    <string name="settings_import_confirm_confirm">Импортировать</string>
+    <string name="settings_import_confirm_cancel">Отмена</string>
+    <string name="settings_import_success">Импорт завершён</string>
+    <string name="settings_import_failure">Импорт не удался</string>
+    <string name="settings_import_error_malformed">Этот файл не является корректной резервной копией ShuRemind</string>
+    <string name="settings_import_error_unsupported_schema">Эта резервная копия создана более новой версией приложения</string>
+    <string name="settings_import_error_safety_export_failed">Не удалось сохранить страховочную копию — импорт отменён</string>
+
+    <plurals name="import_count_tasks">
+        <item quantity="one">%d задача</item>
+        <item quantity="few">%d задачи</item>
+        <item quantity="many">%d задач</item>
+        <item quantity="other">%d задачи</item>
+    </plurals>
+    <plurals name="import_count_reminder_rules">
+        <item quantity="one">%d напоминание</item>
+        <item quantity="few">%d напоминания</item>
+        <item quantity="many">%d напоминаний</item>
+        <item quantity="other">%d напоминания</item>
+    </plurals>
+    <plurals name="import_count_tags">
+        <item quantity="one">%d тег</item>
+        <item quantity="few">%d тега</item>
+        <item quantity="many">%d тегов</item>
+        <item quantity="other">%d тега</item>
+    </plurals>
+    <plurals name="import_count_completions">
+        <item quantity="one">%d запись журнала</item>
+        <item quantity="few">%d записи журнала</item>
+        <item quantity="many">%d записей журнала</item>
+        <item quantity="other">%d записи журнала</item>
+    </plurals>
+    <plurals name="import_count_meter_readings">
+        <item quantity="one">%d показание счётчика</item>
+        <item quantity="few">%d показания счётчика</item>
+        <item quantity="many">%d показаний счётчика</item>
+        <item quantity="other">%d показания счётчика</item>
+    </plurals>
 
     <!-- Alarms & notifications (M3 STEP 7) -->
     <string name="settings_section_alarms_notifications">Будильники и уведомления</string>

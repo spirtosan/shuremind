@@ -14,6 +14,9 @@ internal interface TaskTagDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(crossRef: TaskTagEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(crossRefs: List<TaskTagEntity>)
+
     @Delete
     suspend fun delete(crossRef: TaskTagEntity)
 
@@ -25,4 +28,8 @@ internal interface TaskTagDao {
 
     @Query("SELECT * FROM task_tags")
     fun observeAll(): Flow<List<TaskTagEntity>>
+
+    /** M5 import (D-31 replace-all). observeAll() already covers export (no soft delete on this table). */
+    @Query("DELETE FROM task_tags")
+    suspend fun deleteAll()
 }

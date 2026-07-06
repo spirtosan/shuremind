@@ -13,9 +13,16 @@ internal interface TagDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(tag: TagEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(tags: List<TagEntity>)
+
     @Query("SELECT * FROM tags ORDER BY name")
     fun observeAll(): Flow<List<TagEntity>>
 
     @Query("SELECT * FROM tags WHERE name = :name")
     suspend fun getByName(name: String): TagEntity?
+
+    /** M5 import (D-31 replace-all). Tags have no soft delete, so observeAll() already covers export. */
+    @Query("DELETE FROM tags")
+    suspend fun deleteAll()
 }

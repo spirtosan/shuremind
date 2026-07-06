@@ -13,6 +13,9 @@ internal interface ReminderRuleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(rule: ReminderRuleEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(rules: List<ReminderRuleEntity>)
+
     @Query("SELECT * FROM reminder_rules WHERE task_id = :taskId")
     suspend fun getForTask(taskId: String): List<ReminderRuleEntity>
 
@@ -21,4 +24,12 @@ internal interface ReminderRuleDao {
 
     @Delete
     suspend fun delete(rule: ReminderRuleEntity)
+
+    /** M5 export: every row (DATA_MODEL.md full-fidelity). */
+    @Query("SELECT * FROM reminder_rules")
+    suspend fun getAllForExport(): List<ReminderRuleEntity>
+
+    /** M5 import (D-31 replace-all). */
+    @Query("DELETE FROM reminder_rules")
+    suspend fun deleteAll()
 }

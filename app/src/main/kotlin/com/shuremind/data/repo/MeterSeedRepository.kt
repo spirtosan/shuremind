@@ -9,4 +9,7 @@ interface MeterSeedRepository {
     suspend fun isSeeded(meterName: String): Boolean
 
     suspend fun markSeeded(meterName: String)
+
+    /** M5 export/import (D-30 seed markers): the full idempotency set, read-only round trip. */
+    suspend fun getAllSeeded(): Set<String>
 }

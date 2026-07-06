@@ -33,7 +33,12 @@ class ViewModelFactory(private val container: AppContainer) : ViewModelProvider.
 
             SettingsViewModel::class.java -> SettingsViewModel(
                 settingsRepository = container.settingsRepository,
-                languageRepository = container.languageRepository
+                languageRepository = container.languageRepository,
+                backupSettingsRepository = container.backupSettingsRepository,
+                backupFileWriter = container.backupFileWriter,
+                backupRepository = container.backupRepository,
+                importRepository = container.importRepository,
+                appVersion = com.shuremind.BuildConfig.VERSION_NAME
             ) as T
 
             MeterReadingsViewModel::class.java -> MeterReadingsViewModel(

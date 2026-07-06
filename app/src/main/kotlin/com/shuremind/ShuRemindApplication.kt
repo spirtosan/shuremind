@@ -3,6 +3,7 @@ package com.shuremind
 import android.app.Application
 import android.util.Log
 import com.shuremind.data.entity.TaskEntity
+import com.shuremind.data.repo.AutoBackupScheduling
 import com.shuremind.data.repo.NextFireAtCalculator
 import com.shuremind.data.repo.toCsv
 import com.shuremind.di.AppContainer
@@ -10,10 +11,12 @@ import com.shuremind.engine.RecurrenceAnchor
 import com.shuremind.engine.RecurrenceFrequency
 import com.shuremind.engine.TaskStatus
 import com.shuremind.engine.TaskType
+import com.shuremind.system.BackupWorker
 import com.shuremind.system.HousekeepingWorker
 import com.shuremind.system.NotificationChannels
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Instant
@@ -36,6 +39,28 @@ class ShuRemindApplication : Application() {
             } catch (e: Exception) {
                 Log.e("ShuRemindApplication", "Weekly review seeding failed", e)
             }
+        }
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                reconcileAutoBackupScheduling()
+            } catch (e: Exception) {
+                Log.e("ShuRemindApplication", "Auto-backup scheduling reconciliation failed", e)
+            }
+        }
+    }
+
+    /**
+     * D-32: re-derives whether [BackupWorker] should be enqueued from current settings on every
+     * launch, not just on a settings write — covers app updates / WorkManager state loss between
+     * versions. Idempotent either way (enqueueUniquePeriodicWork/cancelUniqueWork are no-ops if
+     * already in the desired state).
+     */
+    private suspend fun reconcileAutoBackupScheduling() {
+        val settings = container.backupSettingsRepository.settings.first()
+        if (AutoBackupScheduling.shouldBeEnqueued(settings.autoBackupEnabled, settings.folderUri)) {
+            BackupWorker.enqueue(this)
+        } else {
+            BackupWorker.cancel(this)
         }
     }
 

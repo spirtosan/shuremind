@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -35,20 +36,27 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -59,11 +67,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.shuremind.R
 import com.shuremind.data.repo.AppLanguage
 import com.shuremind.engine.TaskType
+import com.shuremind.system.BackupManager
 import com.shuremind.ui.common.AppTimePickerDialog
 import com.shuremind.ui.common.currentLocale
 import com.shuremind.ui.common.formatLocalTime
 import com.shuremind.ui.common.formatSnoozeDuration
 import com.shuremind.ui.common.labelRes
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -72,9 +82,13 @@ fun SettingsScreen(
     onBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
+    val pendingImport by viewModel.pendingImport.collectAsState()
+    val feedback by viewModel.feedback.collectAsState()
     val locale = currentLocale()
     val context = LocalContext.current
     val statuses = rememberPermissionStatuses()
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var editingTime by remember { mutableStateOf<TimeField?>(null) }
     var snoozeInput by remember { mutableStateOf("") }
@@ -82,7 +96,37 @@ fun SettingsScreen(
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
+    // D-32 first-enable flow: set right before launching the picker from the toggle, consumed
+    // (and always cleared) when the picker result comes back — the "Backup folder" row launches
+    // the same picker without ever setting this, so picking a folder there never touches the toggle.
+    var enableAutoBackupAfterFolderPick by rememberSaveable { mutableStateOf(false) }
+
+    val folderPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        val enableAfterPick = enableAutoBackupAfterFolderPick
+        enableAutoBackupAfterFolderPick = false
+        if (uri != null) {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            viewModel.onFolderPicked(uri.toString(), enableAfterPick)
+        }
+    }
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) viewModel.exportTo(uri.toString())
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) viewModel.beginImportFrom(uri.toString())
+    }
+
+    LaunchedEffect(feedback) {
+        val message = feedback?.let { settingsFeedbackMessage(context, it) } ?: return@LaunchedEffect
+        coroutineScope.launch { snackbarHostState.showSnackbar(message) }
+        viewModel.consumeFeedback()
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
@@ -267,8 +311,90 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             SettingsSectionTitle(R.string.settings_section_backup)
-            DisabledToggleRow(R.string.settings_auto_backup, R.string.settings_auto_backup_subtitle)
+
+            val folderDisplayName = state.backupFolderUri?.let { uri ->
+                remember(uri) { BackupManager.folderDisplayName(context, uri) }
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.settings_auto_backup))
+                    Text(stringResource(R.string.settings_auto_backup_subtitle), style = MaterialTheme.typography.bodySmall)
+                }
+                Switch(
+                    checked = state.autoBackupEnabled,
+                    onCheckedChange = { checked ->
+                        if (checked && state.backupFolderUri == null) {
+                            enableAutoBackupAfterFolderPick = true
+                            folderPickerLauncher.launch(null)
+                        } else {
+                            viewModel.setAutoBackupEnabled(checked)
+                        }
+                    }
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        enableAutoBackupAfterFolderPick = false
+                        folderPickerLauncher.launch(null)
+                    }
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(stringResource(R.string.settings_backup_folder_label))
+                Text(
+                    text = folderDisplayName?.let { stringResource(R.string.settings_backup_folder_value, it) }
+                        ?: stringResource(R.string.settings_backup_folder_not_set),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            TextButton(onClick = { viewModel.backupNow() }) {
+                Text(stringResource(R.string.settings_backup_now))
+            }
+            TextButton(onClick = { exportLauncher.launch(viewModel.suggestedExportFileName()) }) {
+                Text(stringResource(R.string.settings_export_data))
+            }
+            TextButton(onClick = { importLauncher.launch(arrayOf("application/json")) }) {
+                Text(stringResource(R.string.settings_import_data))
+            }
         }
+    }
+
+    pendingImport?.let { pending ->
+        AlertDialog(
+            onDismissRequest = viewModel::cancelPendingImport,
+            title = { Text(stringResource(R.string.settings_import_confirm_title)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.settings_import_confirm_message))
+                    Text(
+                        pluralStringResource(R.plurals.import_count_tasks, pending.counts.tasks, pending.counts.tasks),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    Text(pluralStringResource(R.plurals.import_count_reminder_rules, pending.counts.reminderRules, pending.counts.reminderRules))
+                    Text(pluralStringResource(R.plurals.import_count_tags, pending.counts.tags, pending.counts.tags))
+                    Text(pluralStringResource(R.plurals.import_count_completions, pending.counts.completions, pending.counts.completions))
+                    Text(pluralStringResource(R.plurals.import_count_meter_readings, pending.counts.meterReadings, pending.counts.meterReadings))
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.confirmImport() }) {
+                    Text(stringResource(R.string.settings_import_confirm_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::cancelPendingImport) {
+                    Text(stringResource(R.string.settings_import_confirm_cancel))
+                }
+            }
+        )
     }
 
     editingTime?.let { field ->
@@ -298,21 +424,20 @@ private fun SettingsSectionTitle(res: Int) {
     Text(text = stringResource(res), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
 }
 
-@Composable
-private fun DisabledToggleRow(titleRes: Int, subtitleRes: Int) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(titleRes))
-            Text(stringResource(subtitleRes), style = MaterialTheme.typography.bodySmall)
-        }
-        Switch(checked = false, onCheckedChange = null, enabled = false)
+/** M5: maps a one-shot [SettingsFeedback] event to its localized snackbar message. */
+private fun settingsFeedbackMessage(context: android.content.Context, feedback: SettingsFeedback): String = when (feedback) {
+    SettingsFeedback.BackupNowSuccess -> context.getString(R.string.settings_backup_now_success)
+    SettingsFeedback.BackupNowFailure -> context.getString(R.string.settings_backup_now_failure)
+    SettingsFeedback.BackupNoFolder -> context.getString(R.string.settings_backup_no_folder)
+    SettingsFeedback.ExportSuccess -> context.getString(R.string.settings_export_success)
+    SettingsFeedback.ExportFailure -> context.getString(R.string.settings_export_failure)
+    is SettingsFeedback.ImportParseFailed -> when (feedback.error) {
+        is ImportParseError.Malformed -> context.getString(R.string.settings_import_error_malformed)
+        is ImportParseError.UnsupportedSchemaVersion -> context.getString(R.string.settings_import_error_unsupported_schema)
     }
+    SettingsFeedback.ImportSafetyExportFailed -> context.getString(R.string.settings_import_error_safety_export_failed)
+    SettingsFeedback.ImportSuccess -> context.getString(R.string.settings_import_success)
+    SettingsFeedback.ImportFailure -> context.getString(R.string.settings_import_failure)
 }
 
 /** Status row for an OS-level permission/exemption: name, current status, tap-to-fix when not granted. */

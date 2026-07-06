@@ -16,6 +16,9 @@ internal interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(task: TaskEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(tasks: List<TaskEntity>)
+
     @Update
     suspend fun update(task: TaskEntity)
 
@@ -33,4 +36,12 @@ internal interface TaskDao {
 
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun hardDelete(id: String)
+
+    /** M5 export: every row including soft-deleted (DATA_MODEL.md "full-fidelity, includes soft-deleted rows"). */
+    @Query("SELECT * FROM tasks")
+    suspend fun getAllForExport(): List<TaskEntity>
+
+    /** M5 import (D-31 replace-all). */
+    @Query("DELETE FROM tasks")
+    suspend fun deleteAll()
 }

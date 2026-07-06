@@ -12,6 +12,9 @@ internal interface MeterReadingDao {
     @Insert
     suspend fun insert(reading: MeterReadingEntity)
 
+    @Insert
+    suspend fun insertAll(readings: List<MeterReadingEntity>)
+
     @Query("SELECT * FROM meter_readings WHERE meter_name = :meterName ORDER BY recorded_at DESC LIMIT 1")
     suspend fun getLatest(meterName: String): MeterReadingEntity?
 
@@ -20,4 +23,8 @@ internal interface MeterReadingDao {
 
     @Query("SELECT * FROM meter_readings ORDER BY meter_name ASC, recorded_at DESC")
     fun observeAll(): Flow<List<MeterReadingEntity>>
+
+    /** M5 import (D-31 replace-all). observeAll() already covers export (no soft delete on this table). */
+    @Query("DELETE FROM meter_readings")
+    suspend fun deleteAll()
 }

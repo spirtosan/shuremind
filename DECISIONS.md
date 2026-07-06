@@ -52,3 +52,23 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
   stay within that set (verified: Archive/Speed/EventNote absent; used
   AutoMirrored ExitToApp, AutoMirrored List, DateRange instead). Do not
   add material-icons-extended without explicit approval. (2026-07-05)
+- **D-30** Export settings{} includes: quiet hours, default all-day time,
+  currency, per-type default reminder offsets, snooze presets + default
+  snooze duration, seed markers (weekly-review task id, seeded-meters
+  string set), and ui_language read from AppCompatDelegate at export time
+  (D-21). Excluded as device-specific: backup folder URI, auto-backup
+  toggle, exact-alarms opt-in, delivery watermark. (2026-07-06)
+- **D-31** Import is replace-all: wipe all Room tables and restore the D-30
+  settings subset transactionally; delivery watermark is set to import
+  time (prevents overdue-summary flood from imported history);
+  ui_language is NOT applied on import (D-13 — wife's phone keeps her
+  language); confirmation dialog shows entity counts and warns the import
+  replaces everything; before wiping, attempt a safety export to the
+  backup folder if configured, else to app cacheDir (failure to write the
+  safety copy aborts the import with an error). Finish with
+  RecomputeAndRearm. (2026-07-06)
+- **D-32** Auto-backup is a sibling daily unique periodic BackupWorker (not
+  part of housekeeping), enqueued only while the toggle is on AND a folder
+  URI with a persisted SAF permission exists; cancelled when either goes
+  away. Files: shuremind-backup-yyyyMMdd-HHmmss.json; retention keeps the
+  newest 7 files matching that pattern in the picked folder. (2026-07-06)

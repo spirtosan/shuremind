@@ -25,7 +25,7 @@ Extras: **quick timer** (UI shortcut creating an EVENT at now+X, e.g. washing ma
 - The 8 behaviors above; lead-time reminders (multiple per task).
 - Priority engine: score = f(impact, urgency, deadline proximity), grows as due date nears; list sorted by score.
 - Tags/contexts (#shop, #home, #car) with filtered views.
-- Notifications with actions: Done / Snooze / Skip. Quiet hours (global). Deadline escalation curve.
+- Notifications with actions: Done / Snooze / Skip. Quiet hours (global). Deadline escalation curve. Plain-language type labels and contextual help ("?") throughout the UI (M6).
 - Missed-alarm recovery: on boot / app open / daily housekeeping, overdue items surface as a loud summary.
 - Completion log (powers "when did I last change oil", COMPLETION recurrence, future stats).
 - Meter readings screen (car km) + monthly "log your km" prompt.

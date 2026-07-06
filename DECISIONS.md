@@ -93,3 +93,21 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
   phones; if key.properties is absent the release build falls back to
   debug signing so build gates pass. Versioning: versionName 1.0.0,
   versionCode 1, both bumped per release. (2026-07-06)
+- **D-37** Reminder offsets are edited via a structured picker (number + unit
+  + "before due" / "at due"); ISO-8601 remains the storage/export format;
+  free-text ISO input removed; validation mandatory (integer, capped);
+  unparseable stored values degrade to forced re-selection (shown in an
+  error state with the raw string, tap to remove), never crash. (2026-07-06)
+- **D-38** Task types get localized plain-language UI labels; enum constant
+  names in code/DB/export are untouched (D-34). (2026-07-06)
+- **D-39** Priority is shown as a colored chip (bands 0-39/40-59/60-79/
+  80-100, constants co-located with engine tunables in EngineTuning.kt);
+  impact/urgency selectors carry localized word labels alongside the 0-3
+  number; unscored items (SOMEDAY/far-future) show no chip; existing tags
+  are shown as toggle chips in task edit so tags are never retyped.
+  (2026-07-06)
+- **D-40** Contextual help via a custom circled-"?" composable (HelpDot, no
+  new icon dependency per D-29) opening a short localized AlertDialog; the
+  type picker gets one dialog listing all 8 types; no in-app help section;
+  help texts are string resources included in the translation review.
+  (2026-07-06)

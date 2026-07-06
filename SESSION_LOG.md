@@ -7,10 +7,10 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: **M5.5 complete → v1 device smoke test via SMOKE_TEST.md**
-- Next concrete step: user runs SMOKE_TEST.md end-to-end on-device, then v1 install.
+- Phase: v1 installed on both phones → M6 UX pass (part 1 done, part 2 = translation review pending).
+- Next concrete step: translation review table + a week of real-life use.
 - Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
-- Open questions: real launcher icon design (placeholder monogram ships in v1, → D-35); wife's phone Android version unconfirmed.
+- Open questions: real launcher icon design (placeholder monogram ships in v1, → D-35). Wife's phone confirmed Android 10 (M6 smoke test).
 
 ## Session 1 — 2026-07-04 (Fable, planning)
 - Reviewed Gemini's architecture plan; kept offline-first/Room/WorkManager core, added recurrence as day-1 concern, time-growing priority, deferred geofencing, flagged Android 13/14 permission reality.
@@ -128,3 +128,30 @@ _Project memory across chat sessions._
 - Next: user runs SMOKE_TEST.md on the moto g 60 (+ wife's phone when
   its Android version is confirmed ≥8.0), then v1 install. Real icon
   whenever ready.
+
+## Session 8 — 2026-07-06 (Claude Code, M6 part 1)
+- User completed the pending device smoke test on both phones (moto g 60 +
+  wife's phone, confirmed Android 10), release APK installed on both, no
+  functional failures — but the first real-use pass surfaced a real bug:
+  reminder offsets were raw ISO-8601 text fields with no validation, so a
+  bad string silently broke scheduling. That plus general UX intelligibility
+  gaps became M6 part 1 (this change set); translation review is part 2.
+- Claude Code executed M6 part 1: structured reminder-offset picker
+  (ReminderOffsetFormat pure conversion + ReminderOffsetEditor composable —
+  number + unit dropdown + before-due/at-due toggle; unparseable stored
+  values show in an error state instead of crashing) replacing every raw
+  ISO text field (task edit + Settings defaults) — fixes the validation bug
+  (D-37); plain-language task type labels via string resources only, enum
+  names untouched (D-38); priority chip with color bands + word labels on
+  the impact/urgency selectors + a tag toggle-chip picker in task edit
+  (D-39); a contextual HelpDot "?" system wired into every field/section
+  called out in the spec, including a dedicated all-types dialog for the
+  type picker (D-40).
+- Result: 183 tests green (155 + 28 new: offset conversion round-trip/
+  validation/invalid-input, priority band boundaries), assembleDebug +
+  assembleRelease clean, lint clean bar the known local.properties issue.
+  UI changes were not exercised on a real device or emulator this session
+  (none available in this environment) — recommend a quick manual pass
+  before the next real-life week, especially the offset picker and the
+  dark-theme priority chip colors.
+- Next: translation review table (part 2) + a week of real-life use.

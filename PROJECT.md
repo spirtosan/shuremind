@@ -41,7 +41,7 @@ Server sync (schema is sync-ready from day 1), budget planning, task dependencie
 No accounts, no cloud, no analytics, no GMS/Firebase dependency in v1. Not a calendar replacement.
 
 ## Tech stack
-Kotlin 2.x, Jetpack Compose (Material 3), Room, DataStore (settings), AlarmManager (single-next-alarm pattern), WorkManager (daily housekeeping + auto-backup only), kotlinx.serialization (export), java.time with core library desugaring. minSdk 26, targetSdk = current requirement at build time. Single module `:app`. Package placeholder: `com.shuremind` (rename if desired). No new libraries without explicit approval.
+Kotlin 2.x, Jetpack Compose (Material 3), Room, DataStore (settings), AlarmManager (single-next-alarm pattern), WorkManager (daily housekeeping + auto-backup only), kotlinx.serialization (export), java.time with core library desugaring. minSdk 26, targetSdk = current requirement at build time. Single module `:app`. Package/applicationId `com.shuremind` is final; display name "ShuRemind" (D-35). No new libraries without explicit approval.
 
 ## Build phases (for Claude Code)
 - **M1** Data layer + engine: Room schema, recurrence math, priority score, run-out computation. Pure-Kotlin engine, heavily unit-tested (incl. DST cases).

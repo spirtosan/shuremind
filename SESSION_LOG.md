@@ -7,12 +7,10 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: **M5 complete → device smoke test, then M5.5 (polish)**
-- Next concrete step: the smoke test list below (M4 items + M5
-  backup/export/import flows), then M5.5 polish (launcher icon, final
-  name/package, minSdk confirmation) pending user input.
+- Phase: **M5.5 complete → v1 device smoke test via SMOKE_TEST.md**
+- Next concrete step: user runs SMOKE_TEST.md end-to-end on-device, then v1 install.
 - Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
-- Open questions: final app/package name (placeholder `com.shuremind`); confirm minSdk 26 on both target phones (wife's phone version unconfirmed); app has no launcher icon resource yet (pre-existing gap, not M3 scope).
+- Open questions: real launcher icon design (placeholder monogram ships in v1, → D-35); wife's phone Android version unconfirmed.
 
 ## Session 1 — 2026-07-04 (Fable, planning)
 - Reviewed Gemini's architecture plan; kept offline-first/Room/WorkManager core, added recurrence as day-1 concern, time-growing priority, deferred geofencing, flagged Android 13/14 permission reality.
@@ -114,3 +112,19 @@ _Project memory across chat sessions._
 - Next: device smoke test (M4 items + M5 backup/export/import flows),
   then M5.5 polish (launcher icon, final name/package, minSdk
   confirmation) pending user input.
+
+## Session 7 — 2026-07-06 (Fable planning + Claude Code, M5.5)
+- User ratified: package com.shuremind final, display name ShuRemind,
+  real icon deferred (→ D-35); release build unminified + local-keystore
+  signing w/ debug fallback, versioning 1.0.0/1 (→ D-36).
+- Claude Code executed M5.5: placeholder adaptive monogram icon
+  (+ monochrome themed-icon layer), release buildType + key.properties
+  signing scaffold (gitignored), version set, SMOKE_TEST.md checklist
+  (pending M4/M5 device items + the 11 PROJECT.md acceptance cases),
+  PROJECT.md package wording finalized.
+- Result: 155 tests green, assembleDebug + assembleRelease clean, lint —
+  the missing-launcher-icon warning is gone; the local.properties error
+  remains the only known exception.
+- Next: user runs SMOKE_TEST.md on the moto g 60 (+ wife's phone when
+  its Android version is confirmed ≥8.0), then v1 install. Real icon
+  whenever ready.

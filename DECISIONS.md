@@ -82,3 +82,14 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
   RecurrenceFrequency, RecurrenceAnchor, CompletionAction) by constant
   name; those names are part of the export wire format. Renaming any
   constant is an export-schema change and requires a schema_version bump. (2026-07-06)
+- **D-35** applicationId and package `com.shuremind` are final; display
+  name "ShuRemind" (brand name, untranslated in all locales). The real
+  launcher icon is deferred; an interim placeholder adaptive icon (simple
+  monogram vector) ships in v1 and can be replaced later without a
+  decision. (2026-07-06)
+- **D-36** v1 release build: minify/shrink disabled (no R8 keep-rule risk
+  with kotlinx.serialization, size irrelevant); signed with a local user
+  keystore read from a gitignored key.properties, same signature for both
+  phones; if key.properties is absent the release build falls back to
+  debug signing so build gates pass. Versioning: versionName 1.0.0,
+  versionCode 1, both bumped per release. (2026-07-06)

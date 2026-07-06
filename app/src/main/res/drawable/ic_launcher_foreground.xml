@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Placeholder monogram (D-35): geometric "S", replace with the real launcher icon later. -->
+    <path
+        android:pathData="M66,34 C66,27 46,25 42,32 C38,39 47,44 54,46 C61,48 70,51 67,62 C64,73 47,75 42,70"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="9"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+</vector>

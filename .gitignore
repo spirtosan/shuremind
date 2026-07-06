@@ -5,3 +5,7 @@ build/
 *.iml
 .idea/
 .kotlin/
+
+# D-36: local release-signing keystore, never committed
+key.properties
+*.jks

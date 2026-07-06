@@ -69,6 +69,7 @@ import com.shuremind.data.repo.AppLanguage
 import com.shuremind.engine.TaskType
 import com.shuremind.system.BackupManager
 import com.shuremind.ui.common.AppTimePickerDialog
+import com.shuremind.ui.common.HelpDotWithDialog
 import com.shuremind.ui.common.ReminderOffsetEditor
 import com.shuremind.ui.common.currentLocale
 import com.shuremind.ui.common.formatLocalTime
@@ -163,7 +164,7 @@ fun SettingsScreen(
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-            SettingsSectionTitle(R.string.settings_section_quiet_hours)
+            SettingsSectionTitle(R.string.settings_section_quiet_hours, helpRes = R.string.help_settings_quiet_hours)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = { editingTime = TimeField.QUIET_START }) {
                     Text(stringResource(R.string.settings_quiet_hours_start_value, formatLocalTime(state.quietHoursStart, locale)))
@@ -189,7 +190,7 @@ fun SettingsScreen(
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-            SettingsSectionTitle(R.string.settings_section_snooze)
+            SettingsSectionTitle(R.string.settings_section_snooze, helpRes = R.string.help_settings_snooze)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 state.snoozePresetsMinutes.forEach { minutes ->
                     InputChip(
@@ -225,7 +226,7 @@ fun SettingsScreen(
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-            SettingsSectionTitle(R.string.settings_section_reminder_offsets)
+            SettingsSectionTitle(R.string.settings_section_reminder_offsets, helpRes = R.string.help_settings_reminder_offsets)
             listOf(TaskType.EVENT, TaskType.ANNIVERSARY, TaskType.DEADLINE).forEach { type ->
                 ReminderOffsetsForType(
                     type = type,
@@ -254,7 +255,10 @@ fun SettingsScreen(
                     .padding(vertical = 4.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_exact_alarms))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.settings_exact_alarms))
+                        HelpDotWithDialog(R.string.help_settings_exact_alarms)
+                    }
                     Text(stringResource(R.string.settings_exact_alarms_subtitle), style = MaterialTheme.typography.bodySmall)
                     if (state.exactAlarmsOptIn && !statuses.exactAlarmsGrantedByOs) {
                         Text(
@@ -324,7 +328,10 @@ fun SettingsScreen(
                     .padding(vertical = 4.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_auto_backup))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.settings_auto_backup))
+                        HelpDotWithDialog(R.string.help_settings_auto_backup)
+                    }
                     Text(stringResource(R.string.settings_auto_backup_subtitle), style = MaterialTheme.typography.bodySmall)
                 }
                 Switch(
@@ -421,8 +428,11 @@ fun SettingsScreen(
 private enum class TimeField { QUIET_START, QUIET_END, DEFAULT_ALL_DAY }
 
 @Composable
-private fun SettingsSectionTitle(res: Int) {
-    Text(text = stringResource(res), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+private fun SettingsSectionTitle(res: Int, helpRes: Int? = null) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+        Text(text = stringResource(res), style = MaterialTheme.typography.titleMedium)
+        helpRes?.let { HelpDotWithDialog(it) }
+    }
 }
 
 /** M5: maps a one-shot [SettingsFeedback] event to its localized snackbar message. */

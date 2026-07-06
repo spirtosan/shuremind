@@ -3,6 +3,7 @@ package com.shuremind.ui.main
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.shuremind.R
 import com.shuremind.data.entity.TaskEntity
+import com.shuremind.ui.common.HelpDotWithDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,6 +85,14 @@ fun MainScreen(
                     selectedTagId = uiState.selectedTagId,
                     onSelectTag = viewModel::selectTag
                 )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Text(stringResource(R.string.list_priority_legend_label), style = MaterialTheme.typography.bodySmall)
+                    HelpDotWithDialog(R.string.help_priority_chip)
+                }
 
                 TaskSectionsList(
                     uiState = uiState,

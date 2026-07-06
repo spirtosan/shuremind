@@ -17,6 +17,18 @@ fun TaskType.labelRes(): Int = when (this) {
     TaskType.SOMEDAY -> R.string.task_type_someday
 }
 
+/** D-40: one-sentence plain-language explanation shown in the type picker's help dialog. */
+fun TaskType.helpRes(): Int = when (this) {
+    TaskType.EVENT -> R.string.help_type_event
+    TaskType.ANNIVERSARY -> R.string.help_type_anniversary
+    TaskType.DEADLINE -> R.string.help_type_deadline
+    TaskType.WINDOW -> R.string.help_type_window
+    TaskType.NAG -> R.string.help_type_nag
+    TaskType.RECURRING -> R.string.help_type_recurring
+    TaskType.CONSUMABLE -> R.string.help_type_consumable
+    TaskType.SOMEDAY -> R.string.help_type_someday
+}
+
 fun RecurrenceFrequency.labelRes(): Int = when (this) {
     RecurrenceFrequency.DAILY -> R.string.rec_freq_daily
     RecurrenceFrequency.WEEKLY -> R.string.rec_freq_weekly

@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.shuremind.R
 import com.shuremind.data.entity.TaskEntity
+import com.shuremind.ui.common.HelpDotWithDialog
 import com.shuremind.ui.common.formatSnoozeDuration
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +57,9 @@ fun WeeklyReviewScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.nav_back))
                     }
+                },
+                actions = {
+                    HelpDotWithDialog(R.string.help_weekly_review)
                 }
             )
         }

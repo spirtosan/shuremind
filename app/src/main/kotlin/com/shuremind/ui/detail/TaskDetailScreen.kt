@@ -47,8 +47,10 @@ import com.shuremind.engine.RecurrenceFrequency
 import com.shuremind.engine.TaskType
 import com.shuremind.ui.common.AppDatePickerDialog
 import com.shuremind.ui.common.AppTimePickerDialog
+import com.shuremind.ui.common.HelpDotWithDialog
 import com.shuremind.ui.common.LeveledStepperRow
 import com.shuremind.ui.common.ReminderOffsetEditor
+import com.shuremind.ui.common.TypeHelpDot
 import com.shuremind.ui.common.currentLocale
 import com.shuremind.ui.common.formatLocalDate
 import com.shuremind.ui.common.formatLocalTime
@@ -121,7 +123,11 @@ fun TaskDetailScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             )
-            FlowRow(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+                Text(stringResource(R.string.field_type))
+                TypeHelpDot()
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TaskType.entries.forEach { type ->
                     FilterChip(
                         selected = state.type == type,
@@ -132,11 +138,13 @@ fun TaskDetailScreen(
             }
             LeveledStepperRow(
                 R.string.field_impact, state.impact, viewModel::setImpact, ::impactLevelLabelRes,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 8.dp),
+                headerTrailing = { HelpDotWithDialog(R.string.help_impact) }
             )
             LeveledStepperRow(
                 R.string.field_urgency, state.urgency, viewModel::setUrgency, ::urgencyLevelLabelRes,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 8.dp),
+                headerTrailing = { HelpDotWithDialog(R.string.help_urgency) }
             )
             OutlinedTextField(
                 value = state.estimatedCost,
@@ -162,6 +170,10 @@ fun TaskDetailScreen(
                     onClearDate = { viewModel.setDueLocalDate(null); viewModel.setDueLocalTime(null) },
                     onClearTime = { viewModel.setDueLocalTime(null) }
                 )
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 12.dp)) {
+                    Text(stringResource(R.string.field_reminder_offsets))
+                    HelpDotWithDialog(R.string.help_reminder_offsets)
+                }
                 ReminderOffsetEditor(
                     offsets = state.reminderOffsets,
                     onAdd = viewModel::addReminderOffset,
@@ -198,7 +210,10 @@ fun TaskDetailScreen(
                 }
 
                 if (state.type == TaskType.WINDOW || state.type == TaskType.RECURRING) {
-                    Text(stringResource(R.string.field_rec_freq), modifier = Modifier.padding(top = 8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+                        Text(stringResource(R.string.field_rec_freq))
+                        HelpDotWithDialog(R.string.help_recurrence_interval)
+                    }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         RecurrenceFrequency.entries.forEach { freq ->
                             FilterChip(
@@ -272,7 +287,7 @@ fun TaskDetailScreen(
                             .padding(top = 8.dp)
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                    SectionTitle(R.string.detail_section_date_learned)
+                    SectionTitle(R.string.detail_section_date_learned, helpRes = R.string.help_window)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         TextButton(onClick = { datePickerTarget = DetailDateField.DATE_LEARNED }) {
                             Text(
@@ -299,7 +314,7 @@ fun TaskDetailScreen(
                 }
 
                 if (state.type == TaskType.RECURRING) {
-                    SectionTitle(R.string.detail_section_meter, topPadding = 16.dp)
+                    SectionTitle(R.string.detail_section_meter, topPadding = 16.dp, helpRes = R.string.help_meter)
                     OutlinedTextField(
                         value = state.meterName,
                         onValueChange = viewModel::setMeterName,
@@ -328,16 +343,22 @@ fun TaskDetailScreen(
                     )
                 }
 
-                Row(modifier = Modifier.padding(top = 8.dp)) {
-                    TextButton(onClick = { datePickerTarget = DetailDateField.NOT_BEFORE }) {
-                        Text(
-                            state.notBefore?.let { formatLocalDate(LocalDate.parse(it), locale) }
-                                ?: stringResource(R.string.field_not_before)
-                        )
+                Column(modifier = Modifier.padding(top = 8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.field_not_before))
+                        HelpDotWithDialog(R.string.help_not_before)
                     }
-                    if (state.notBefore != null) {
-                        IconButton(onClick = { viewModel.setNotBefore(null) }) {
-                            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.capture_clear_date))
+                    Row {
+                        TextButton(onClick = { datePickerTarget = DetailDateField.NOT_BEFORE }) {
+                            Text(
+                                state.notBefore?.let { formatLocalDate(LocalDate.parse(it), locale) }
+                                    ?: stringResource(R.string.capture_pick_date)
+                            )
+                        }
+                        if (state.notBefore != null) {
+                            IconButton(onClick = { viewModel.setNotBefore(null) }) {
+                                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.capture_clear_date))
+                            }
                         }
                     }
                 }
@@ -345,7 +366,7 @@ fun TaskDetailScreen(
 
             if (state.type == TaskType.CONSUMABLE) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                SectionTitle(R.string.detail_section_consumable)
+                SectionTitle(R.string.detail_section_consumable, helpRes = R.string.help_consumable)
                 OutlinedTextField(
                     value = state.stockQty,
                     onValueChange = viewModel::setStockQty,
@@ -403,7 +424,7 @@ fun TaskDetailScreen(
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-            SectionTitle(R.string.detail_section_tags)
+            SectionTitle(R.string.detail_section_tags, helpRes = R.string.help_tags)
             // D-39 tag picker: existing tags are tappable toggles so the user never retypes one.
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 state.allTags.forEach { tag ->
@@ -548,12 +569,14 @@ private fun RestockDialog(
 }
 
 @Composable
-private fun SectionTitle(res: Int, topPadding: androidx.compose.ui.unit.Dp = 0.dp) {
-    Text(
-        text = stringResource(res),
-        style = MaterialTheme.typography.titleMedium,
+private fun SectionTitle(res: Int, topPadding: androidx.compose.ui.unit.Dp = 0.dp, helpRes: Int? = null) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(top = topPadding, bottom = 8.dp)
-    )
+    ) {
+        Text(text = stringResource(res), style = MaterialTheme.typography.titleMedium)
+        helpRes?.let { HelpDotWithDialog(it) }
+    }
 }
 
 @Composable

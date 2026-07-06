@@ -36,6 +36,8 @@
     <!-- Tag filter -->
     <string name="tag_filter_all">All</string>
 
+    <string name="list_priority_legend_label">Priority</string>
+
     <!-- Main list sections -->
     <string name="section_overdue">Overdue</string>
     <string name="section_today">Today</string>
@@ -305,4 +307,38 @@
     <string name="weekly_review_empty">Nothing to review</string>
     <string name="weekly_review_archive">Archive</string>
     <string name="weekly_review_task_title">Weekly review</string>
+
+    <!-- M6: contextual help system (D-40) -->
+    <string name="help_close">Close</string>
+    <string name="field_type">Type</string>
+    <string name="field_reminder_offsets">Reminders</string>
+
+    <string name="help_type_picker_title">Task types</string>
+    <string name="help_type_event">A fixed date and time you want to be reminded about, like an appointment or a call.</string>
+    <string name="help_type_anniversary">A date that repeats every year, like a birthday — reminders lead up to it each year.</string>
+    <string name="help_type_deadline">A hard due date, with reminders that get more frequent as it gets closer.</string>
+    <string name="help_type_window">Date not known yet: you know a deadline is coming but not when; the app reminds you to check, and converts to a Deadline once you learn the date.</string>
+    <string name="help_type_nag">Repeats on a short cycle until you mark it done — good for things you keep putting off.</string>
+    <string name="help_type_recurring">Repeats on a regular schedule, like daily medicine or watering plants every few days.</string>
+    <string name="help_type_consumable">Tracks a supply that runs low over time and reminds you to restock before it runs out.</string>
+    <string name="help_type_someday">No date and no alarms — just something to revisit during your weekly review.</string>
+
+    <string name="help_impact">Impact is what happens if you skip this — higher impact should get attention regardless of timing.</string>
+    <string name="help_urgency">Urgency is how soon it matters. The score also grows on its own as the due date gets closer.</string>
+
+    <string name="help_reminder_offsets">Each reminder fires a set amount of time before the due date. Add as many as you like, or choose \"At due\" for one right at the deadline.</string>
+    <string name="help_not_before">The task stays invisible and silent until this date — nothing will remind you before then.</string>
+    <string name="help_recurrence_interval">\"Every 2\" together with a day (e.g. Friday) means every second Friday. The end date is optional — it\'s when the repetition stops; leave it blank to repeat indefinitely.</string>
+    <string name="help_window">Use the hint to jot down roughly when this usually happens (e.g. \"usually Sep–Nov\"). Once you learn the actual date, enter it above and tap \"Date learned\" to convert this into a Deadline.</string>
+    <string name="help_meter">Name links this task to its readings in the Meter readings screen. Interval is in the same units as those readings. Last done is the meter\'s value at the last completion — an estimate is fine.</string>
+    <string name="help_consumable">Stock is how much you currently have. Dose per intake is how much is used each time. Lead days is how many days before running out you want the first reminder.</string>
+    <string name="help_tags">Tags are shared labels like #shop or #home — tap an existing one to add it, or type a new name to create one.</string>
+    <string name="help_priority_chip">The number is the task\'s priority score (0–100): it combines impact, urgency, and how close the due date is. Gray is low, blue is medium, orange is high, and red is very high or overdue.</string>
+    <string name="help_weekly_review">A weekly pass through anything easy to forget: Someday items, tasks that have gone stale, and Window tasks waiting for a date. For each one, decide whether to do it, snooze it, delete it, or just leave it for next time.</string>
+
+    <string name="help_settings_quiet_hours">No reminders will sound during these hours; anything due then is delivered right after quiet hours end.</string>
+    <string name="help_settings_reminder_offsets">These are the default lead times used when you create a new Event, Anniversary, or Deadline — you can still change them per task.</string>
+    <string name="help_settings_snooze">These are the quick options shown when you tap Snooze on a reminder. The default duration is used by the Snooze action on notifications, which doesn\'t ask which one to use.</string>
+    <string name="help_settings_exact_alarms">Exact alarms fire at the precise minute; without this, Android may delay a reminder by a few minutes to save battery.</string>
+    <string name="help_settings_auto_backup">Automatically saves a backup of everything to your chosen folder once a day, keeping the last 7 copies.</string>
 </resources>

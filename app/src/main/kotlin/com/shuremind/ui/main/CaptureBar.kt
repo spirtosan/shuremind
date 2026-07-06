@@ -36,7 +36,9 @@ import com.shuremind.R
 import com.shuremind.engine.TaskType
 import com.shuremind.ui.common.AppDatePickerDialog
 import com.shuremind.ui.common.AppTimePickerDialog
+import com.shuremind.ui.common.HelpDotWithDialog
 import com.shuremind.ui.common.LeveledStepperRow
+import com.shuremind.ui.common.TypeHelpDot
 import com.shuremind.ui.common.currentLocale
 import com.shuremind.ui.common.formatLocalDate
 import com.shuremind.ui.common.formatLocalTime
@@ -96,7 +98,10 @@ fun CaptureBar(
 
             if (state.expanded) {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
-                    Text(stringResource(R.string.capture_type_label))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.capture_type_label))
+                        TypeHelpDot()
+                    }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TaskType.entries.forEach { type ->
                             FilterChip(
@@ -109,14 +114,19 @@ fun CaptureBar(
 
                     LeveledStepperRow(
                         R.string.capture_impact_label, state.impact, onImpactChange, ::impactLevelLabelRes,
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 8.dp),
+                        headerTrailing = { HelpDotWithDialog(R.string.help_impact) }
                     )
                     LeveledStepperRow(
                         R.string.capture_urgency_label, state.urgency, onUrgencyChange, ::urgencyLevelLabelRes,
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 8.dp),
+                        headerTrailing = { HelpDotWithDialog(R.string.help_urgency) }
                     )
 
-                    Text(stringResource(R.string.capture_tags_label), modifier = Modifier.padding(top = 8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+                        Text(stringResource(R.string.capture_tags_label))
+                        HelpDotWithDialog(R.string.help_tags)
+                    }
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = state.tagInput,

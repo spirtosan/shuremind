@@ -277,6 +277,14 @@ class FakeMeterReadingDao(initial: List<MeterReadingEntity> = emptyList()) : Met
 
     override fun observeAll(): Flow<List<MeterReadingEntity>> =
         state.map { list -> list.sortedWith(compareBy<MeterReadingEntity> { it.meterName }.thenByDescending { it.recordedAt }) }
+
+    override suspend fun insertAll(readings: List<MeterReadingEntity>) {
+        state.update { it + readings }
+    }
+
+    override suspend fun deleteAll() {
+        state.value = emptyList()
+    }
 }
 
 /** Test seam: MeterRepository's constructor is `internal`, reachable from src/test via Kotlin friend paths. */
@@ -289,6 +297,7 @@ class FakeMeterSeedRepository(initialSeeded: Set<String> = emptySet()) : MeterSe
     override suspend fun markSeeded(meterName: String) {
         seeded += meterName
     }
+    override suspend fun getAllSeeded(): Set<String> = seeded.toSet()
 }
 
 class FakeWeeklyReviewSeedRepository(private var taskId: String? = null) : WeeklyReviewSeedRepository {
@@ -307,5 +316,61 @@ class FakeReminderRuleRepository(initial: Map<String, List<String>> = emptyMap()
 
     override suspend fun setForTask(taskId: String, offsetIsos: List<String>) {
         offsetsByTaskId[taskId] = offsetIsos
+    }
+}
+
+class FakeBackupSettingsRepository(
+    initial: com.shuremind.data.repo.BackupSettings = com.shuremind.data.repo.BackupSettings()
+) : com.shuremind.data.repo.BackupSettingsRepository {
+    private val state = MutableStateFlow(initial)
+
+    override val settings: Flow<com.shuremind.data.repo.BackupSettings> = state
+
+    override suspend fun setAutoBackupEnabled(enabled: Boolean) {
+        state.update { it.copy(autoBackupEnabled = enabled) }
+    }
+
+    override suspend fun setFolderUri(uri: String?) {
+        state.update { it.copy(folderUri = uri) }
+    }
+}
+
+class FakeBackupFileWriter : com.shuremind.data.repo.BackupFileWriter {
+    override suspend fun writeToFolder(folderUri: String, json: String): Result<String> = Result.success("shuremind-backup-fake.json")
+    override suspend fun writeSafetyExport(folderUri: String?, json: String): Result<Unit> = Result.success(Unit)
+    override suspend fun writeToDocument(documentUri: String, json: String): Result<Unit> = Result.success(Unit)
+    override suspend fun readDocument(documentUri: String): Result<String> = Result.success("")
+    override fun hasPersistedPermission(folderUri: String): Boolean = true
+}
+
+class FakeBackupRepository : com.shuremind.data.backup.BackupRepository {
+    override suspend fun buildSnapshot(): com.shuremind.data.backup.BackupSnapshot = com.shuremind.data.backup.BackupSnapshot(
+        tasks = emptyList(),
+        reminderRules = emptyList(),
+        tags = emptyList(),
+        taskTags = emptyList(),
+        completions = emptyList(),
+        meterReadings = emptyList(),
+        settings = com.shuremind.data.backup.dto.ExportSettingsDto(
+            quietHoursStart = "22:00",
+            quietHoursEnd = "08:00",
+            defaultAllDayTime = "09:00",
+            currency = "EUR",
+            defaultReminderOffsets = emptyMap(),
+            snoozePresetsMinutes = emptyList(),
+            defaultSnoozeDurationMinutes = 60L,
+            weeklyReviewTaskId = null,
+            seededMeterNames = emptySet(),
+            uiLanguage = null
+        )
+    )
+}
+
+class FakeImportRepository : com.shuremind.data.backup.ImportRepository {
+    var imported: com.shuremind.data.backup.dto.ExportFile? = null
+        private set
+
+    override suspend fun import(file: com.shuremind.data.backup.dto.ExportFile, now: Long) {
+        imported = file
     }
 }

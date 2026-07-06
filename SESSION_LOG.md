@@ -7,13 +7,12 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: **M4 complete → ready for M5 (import/export + auto-backup +
-  polish)**
-- Next concrete step: M5 with Claude Code — versioned full-fidelity
-  JSON export/import (replace-all, D-11), daily auto-backup to
-  user-picked folder keeping last 7, Settings rows for backup go live.
+- Phase: **M5 complete → device smoke test, then M5.5 (polish)**
+- Next concrete step: the smoke test list below (M4 items + M5
+  backup/export/import flows), then M5.5 polish (launcher icon, final
+  name/package, minSdk confirmation) pending user input.
 - Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
-- Open questions: final app/package name (placeholder `com.shuremind`); confirm minSdk 26 on both target phones; app has no launcher icon resource yet (pre-existing gap, not M3 scope).
+- Open questions: final app/package name (placeholder `com.shuremind`); confirm minSdk 26 on both target phones (wife's phone version unconfirmed); app has no launcher icon resource yet (pre-existing gap, not M3 scope).
 
 ## Session 1 — 2026-07-04 (Fable, planning)
 - Reviewed Gemini's architecture plan; kept offline-first/Room/WorkManager core, added recurrence as day-1 concern, time-growing priority, deferred geofencing, flagged Android 13/14 permission reality.
@@ -90,3 +89,28 @@ _Project memory across chat sessions._
 - Pre-M5 device smoke test now unblocked and pending: Restock
   notification action, weekly-review notification tap, first meter
   reading + monthly prompt seeding, language switch.
+
+## Session 6 — 2026-07-06 (Fable planning + Claude Code, M5)
+- Planning ratified D-30..D-32 (export settings subset incl. seed
+  markers, replace-all import w/ watermark=import-time + safety export +
+  ui_language never applied, sibling daily BackupWorker + keep-7).
+- Claude Code executed M5: @Serializable DTO layer (snake_case, decoupled
+  from Room entities), ExportEngine/ImportEngine (pure Kotlin, typed
+  parse errors, ignoreUnknownKeys), RoomImportRepository (replace-all in
+  one Room transaction via new TransactionRunner seam, watermark set to
+  import time, seed markers restored, RecomputeAndRearm via existing
+  hook), BackupManager (SAF via DocumentsContract, no new libraries),
+  BackupWorker (unique periodic, enqueue/cancel from settings writes +
+  launch-time reconciliation), Settings rows live (folder picker w/
+  persisted permission, Back up now, export via CREATE_DOCUMENT, import
+  w/ counts confirmation dialog), en/bg/ru strings w/ RU 4-form plurals.
+- Post-review: fixed first-enable toggle bug (folder pick from the
+  toggle now also enables auto-backup); ratified D-33 (settings restore
+  outside the Room transaction — accepted) and D-34 (enum names are wire
+  format).
+- Result: 155 tests green, assembleDebug clean, lint clean bar the
+  known local.properties issue. DATA_MODEL.md Export JSON section
+  rewritten per D-30/D-31/D-32.
+- Next: device smoke test (M4 items + M5 backup/export/import flows),
+  then M5.5 polish (launcher icon, final name/package, minSdk
+  confirmation) pending user input.

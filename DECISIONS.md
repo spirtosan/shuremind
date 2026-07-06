@@ -72,3 +72,13 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
   URI with a persisted SAF permission exists; cancelled when either goes
   away. Files: shuremind-backup-yyyyMMdd-HHmmss.json; retention keeps the
   newest 7 files matching that pattern in the picked folder. (2026-07-06)
+- **D-33** Import restores the D-31 settings subset as sequential
+  DataStore writes after the Room transaction commits — Room and
+  DataStore cannot share a transaction. Accepted failure mode: task data
+  imported but settings partially restored; recoverable by re-running the
+  import, and the pre-import safety export exists regardless. No
+  compensation logic in v1. Clarifies D-31's "in one transaction". (2026-07-06)
+- **D-34** Export serializes engine enums (TaskType, TaskStatus,
+  RecurrenceFrequency, RecurrenceAnchor, CompletionAction) by constant
+  name; those names are part of the export wire format. Renaming any
+  constant is an export-schema change and requires a schema_version bump. (2026-07-06)

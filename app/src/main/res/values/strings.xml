@@ -125,7 +125,43 @@
     <string name="day_su">Sun</string>
 
     <string name="reminder_offset_add">Add reminder</string>
-    <string name="reminder_offset_hint">e.g. P14D, P7D, P1D, PT2H</string>
+    <string name="reminder_offset_at_due">At due time</string>
+    <string name="reminder_offset_mode_before">Before due</string>
+    <string name="reminder_offset_mode_at_due">At due</string>
+    <string name="reminder_offset_amount_label">Amount</string>
+    <string name="reminder_offset_unit_label">Unit</string>
+    <string name="reminder_offset_unit_minutes">Minutes</string>
+    <string name="reminder_offset_unit_hours">Hours</string>
+    <string name="reminder_offset_unit_days">Days</string>
+    <string name="reminder_offset_unit_weeks">Weeks</string>
+    <string name="reminder_offset_before_due_suffix">before due</string>
+    <string name="reminder_offset_error_range">Enter a whole number from 1 up to about a year</string>
+    <string name="reminder_offset_invalid">Invalid value \"%1$s\" — tap to remove</string>
+
+    <plurals name="reminder_offset_minutes_before">
+        <item quantity="one">%d minute before due</item>
+        <item quantity="few">%d minutes before due</item>
+        <item quantity="many">%d minutes before due</item>
+        <item quantity="other">%d minutes before due</item>
+    </plurals>
+    <plurals name="reminder_offset_hours_before">
+        <item quantity="one">%d hour before due</item>
+        <item quantity="few">%d hours before due</item>
+        <item quantity="many">%d hours before due</item>
+        <item quantity="other">%d hours before due</item>
+    </plurals>
+    <plurals name="reminder_offset_days_before">
+        <item quantity="one">%d day before due</item>
+        <item quantity="few">%d days before due</item>
+        <item quantity="many">%d days before due</item>
+        <item quantity="other">%d days before due</item>
+    </plurals>
+    <plurals name="reminder_offset_weeks_before">
+        <item quantity="one">%d week before due</item>
+        <item quantity="few">%d weeks before due</item>
+        <item quantity="many">%d weeks before due</item>
+        <item quantity="other">%d weeks before due</item>
+    </plurals>
 
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>

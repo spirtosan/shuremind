@@ -69,6 +69,7 @@ import com.shuremind.data.repo.AppLanguage
 import com.shuremind.engine.TaskType
 import com.shuremind.system.BackupManager
 import com.shuremind.ui.common.AppTimePickerDialog
+import com.shuremind.ui.common.ReminderOffsetEditor
 import com.shuremind.ui.common.currentLocale
 import com.shuremind.ui.common.formatLocalTime
 import com.shuremind.ui.common.formatSnoozeDuration
@@ -507,44 +508,19 @@ private fun rememberPermissionStatuses(): PermissionStatuses {
     return statuses
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ReminderOffsetsForType(
     type: TaskType,
     offsets: List<String>,
     onChange: (List<String>) -> Unit
 ) {
-    var input by remember { mutableStateOf("") }
     Column(modifier = Modifier.padding(bottom = 12.dp)) {
         Text(stringResource(type.labelRes()), style = MaterialTheme.typography.bodyLarge)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
-            offsets.forEach { offset ->
-                InputChip(
-                    selected = false,
-                    onClick = { onChange(offsets - offset) },
-                    label = { Text(offset) },
-                    trailingIcon = {
-                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.capture_remove_tag), modifier = Modifier.size(16.dp))
-                    }
-                )
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
-            OutlinedTextField(
-                value = input,
-                onValueChange = { input = it },
-                placeholder = { Text(stringResource(R.string.reminder_offset_hint)) },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-            IconButton(onClick = {
-                if (input.isNotBlank()) {
-                    onChange((offsets + input.trim()).distinct())
-                    input = ""
-                }
-            }) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.reminder_offset_add))
-            }
-        }
+        ReminderOffsetEditor(
+            offsets = offsets,
+            onAdd = { iso -> onChange((offsets + iso).distinct()) },
+            onRemove = { iso -> onChange(offsets - iso) },
+            modifier = Modifier.padding(top = 4.dp)
+        )
     }
 }

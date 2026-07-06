@@ -126,7 +126,43 @@
     <string name="day_su">Вс</string>
 
     <string name="reminder_offset_add">Добавить напоминание</string>
-    <string name="reminder_offset_hint">напр. P14D, P7D, P1D, PT2H</string>
+    <string name="reminder_offset_at_due">Точно в срок</string>
+    <string name="reminder_offset_mode_before">До срока</string>
+    <string name="reminder_offset_mode_at_due">В срок</string>
+    <string name="reminder_offset_amount_label">Количество</string>
+    <string name="reminder_offset_unit_label">Единица</string>
+    <string name="reminder_offset_unit_minutes">Минуты</string>
+    <string name="reminder_offset_unit_hours">Часы</string>
+    <string name="reminder_offset_unit_days">Дни</string>
+    <string name="reminder_offset_unit_weeks">Недели</string>
+    <string name="reminder_offset_before_due_suffix">до срока</string>
+    <string name="reminder_offset_error_range">Введите целое число от 1 примерно до года</string>
+    <string name="reminder_offset_invalid">Некорректное значение \"%1$s\" — нажмите, чтобы удалить</string>
+
+    <plurals name="reminder_offset_minutes_before">
+        <item quantity="one">За %d минуту до срока</item>
+        <item quantity="few">За %d минуты до срока</item>
+        <item quantity="many">За %d минут до срока</item>
+        <item quantity="other">За %d минуты до срока</item>
+    </plurals>
+    <plurals name="reminder_offset_hours_before">
+        <item quantity="one">За %d час до срока</item>
+        <item quantity="few">За %d часа до срока</item>
+        <item quantity="many">За %d часов до срока</item>
+        <item quantity="other">За %d часа до срока</item>
+    </plurals>
+    <plurals name="reminder_offset_days_before">
+        <item quantity="one">За %d день до срока</item>
+        <item quantity="few">За %d дня до срока</item>
+        <item quantity="many">За %d дней до срока</item>
+        <item quantity="other">За %d дня до срока</item>
+    </plurals>
+    <plurals name="reminder_offset_weeks_before">
+        <item quantity="one">За %d неделю до срока</item>
+        <item quantity="few">За %d недели до срока</item>
+        <item quantity="many">За %d недель до срока</item>
+        <item quantity="other">За %d недели до срока</item>
+    </plurals>
 
     <!-- Settings screen -->
     <string name="settings_title">Настройки</string>

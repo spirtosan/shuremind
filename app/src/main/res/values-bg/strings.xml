@@ -120,7 +120,35 @@
     <string name="day_su">Нед</string>
 
     <string name="reminder_offset_add">Добави напомняне</string>
-    <string name="reminder_offset_hint">напр. P14D, P7D, P1D, PT2H</string>
+    <string name="reminder_offset_at_due">Точно в срока</string>
+    <string name="reminder_offset_mode_before">Преди срока</string>
+    <string name="reminder_offset_mode_at_due">В срока</string>
+    <string name="reminder_offset_amount_label">Брой</string>
+    <string name="reminder_offset_unit_label">Единица</string>
+    <string name="reminder_offset_unit_minutes">Минути</string>
+    <string name="reminder_offset_unit_hours">Часове</string>
+    <string name="reminder_offset_unit_days">Дни</string>
+    <string name="reminder_offset_unit_weeks">Седмици</string>
+    <string name="reminder_offset_before_due_suffix">преди срока</string>
+    <string name="reminder_offset_error_range">Въведете цяло число от 1 до около година</string>
+    <string name="reminder_offset_invalid">Невалидна стойност \"%1$s\" — докоснете за премахване</string>
+
+    <plurals name="reminder_offset_minutes_before">
+        <item quantity="one">%d минута преди срока</item>
+        <item quantity="other">%d минути преди срока</item>
+    </plurals>
+    <plurals name="reminder_offset_hours_before">
+        <item quantity="one">%d час преди срока</item>
+        <item quantity="other">%d часа преди срока</item>
+    </plurals>
+    <plurals name="reminder_offset_days_before">
+        <item quantity="one">%d ден преди срока</item>
+        <item quantity="other">%d дни преди срока</item>
+    </plurals>
+    <plurals name="reminder_offset_weeks_before">
+        <item quantity="one">%d седмица преди срока</item>
+        <item quantity="other">%d седмици преди срока</item>
+    </plurals>
 
     <!-- Settings screen -->
     <string name="settings_title">Настройки</string>

@@ -47,6 +47,7 @@ import com.shuremind.engine.RecurrenceFrequency
 import com.shuremind.engine.TaskType
 import com.shuremind.ui.common.AppDatePickerDialog
 import com.shuremind.ui.common.AppTimePickerDialog
+import com.shuremind.ui.common.ReminderOffsetEditor
 import com.shuremind.ui.common.currentLocale
 import com.shuremind.ui.common.formatLocalDate
 import com.shuremind.ui.common.formatLocalTime
@@ -152,7 +153,7 @@ fun TaskDetailScreen(
                     onClearDate = { viewModel.setDueLocalDate(null); viewModel.setDueLocalTime(null) },
                     onClearTime = { viewModel.setDueLocalTime(null) }
                 )
-                ReminderOffsetsEditor(
+                ReminderOffsetEditor(
                     offsets = state.reminderOffsets,
                     onAdd = viewModel::addReminderOffset,
                     onRemove = viewModel::removeReminderOffset
@@ -578,47 +579,6 @@ private fun DateTimeRow(
                 IconButton(onClick = onClearTime) {
                     Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.capture_clear_time))
                 }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun ReminderOffsetsEditor(
-    offsets: List<String>,
-    onAdd: (String) -> Unit,
-    onRemove: (String) -> Unit
-) {
-    var input by remember { mutableStateOf("") }
-    Column(modifier = Modifier.padding(top = 8.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(
-                value = input,
-                onValueChange = { input = it },
-                placeholder = { Text(stringResource(R.string.reminder_offset_hint)) },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-            IconButton(onClick = {
-                if (input.isNotBlank()) {
-                    onAdd(input.trim())
-                    input = ""
-                }
-            }) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.reminder_offset_add))
-            }
-        }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-            offsets.forEach { offset ->
-                InputChip(
-                    selected = false,
-                    onClick = { onRemove(offset) },
-                    label = { Text(offset) },
-                    trailingIcon = {
-                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.capture_remove_tag), modifier = Modifier.size(16.dp))
-                    }
-                )
             }
         }
     }

@@ -29,6 +29,13 @@ fun RecurrenceAnchor.labelRes(): Int = when (this) {
     RecurrenceAnchor.COMPLETION -> R.string.rec_anchor_completion
 }
 
+fun OffsetUnit.labelRes(): Int = when (this) {
+    OffsetUnit.MINUTES -> R.string.reminder_offset_unit_minutes
+    OffsetUnit.HOURS -> R.string.reminder_offset_unit_hours
+    OffsetUnit.DAYS -> R.string.reminder_offset_unit_days
+    OffsetUnit.WEEKS -> R.string.reminder_offset_unit_weeks
+}
+
 fun DayOfWeek.shortLabelRes(): Int = when (this) {
     DayOfWeek.MONDAY -> R.string.day_mo
     DayOfWeek.TUESDAY -> R.string.day_tu

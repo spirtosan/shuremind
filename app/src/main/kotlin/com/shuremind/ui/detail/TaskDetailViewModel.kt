@@ -48,6 +48,7 @@ class TaskDetailViewModel(
         viewModelScope.launch {
             val task = taskRepository.getById(taskId) ?: return@launch
             val tags = tagRepository.getTagsForTask(taskId).map { it.name }
+            val allTags = tagRepository.observeAll().first().map { it.name }
             var reminderOffsets = reminderRuleRepository.getForTask(taskId).map { it.offsetIso }
             if (reminderOffsets.isEmpty() && task.type in REMINDER_RULE_TYPES) {
                 reminderOffsets = settingsRepository.settings.first().defaultReminderOffsets[task.type].orEmpty()
@@ -86,6 +87,7 @@ class TaskDetailViewModel(
                 windowHint = task.windowHint ?: "",
                 reminderOffsets = reminderOffsets,
                 tags = tags,
+                allTags = allTags,
                 showRestockDialog = autoOpenRestock && task.type == TaskType.CONSUMABLE
             )
         }
@@ -137,6 +139,8 @@ class TaskDetailViewModel(
         update { it.copy(tags = (it.tags + name).distinct(), tagInput = "") }
     }
     fun removeTag(name: String) = update { it.copy(tags = it.tags - name) }
+    /** D-39 tag picker: toggling an existing tag chip on/off the task. */
+    fun toggleTag(name: String) = update { it.copy(tags = if (name in it.tags) it.tags - name else it.tags + name) }
     fun addReminderOffset(offsetIso: String) = update { it.copy(reminderOffsets = (it.reminderOffsets + offsetIso).distinct()) }
     fun removeReminderOffset(offsetIso: String) = update { it.copy(reminderOffsets = it.reminderOffsets - offsetIso) }
 

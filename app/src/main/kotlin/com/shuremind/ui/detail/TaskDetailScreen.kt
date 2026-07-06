@@ -47,12 +47,15 @@ import com.shuremind.engine.RecurrenceFrequency
 import com.shuremind.engine.TaskType
 import com.shuremind.ui.common.AppDatePickerDialog
 import com.shuremind.ui.common.AppTimePickerDialog
+import com.shuremind.ui.common.LeveledStepperRow
 import com.shuremind.ui.common.ReminderOffsetEditor
 import com.shuremind.ui.common.currentLocale
 import com.shuremind.ui.common.formatLocalDate
 import com.shuremind.ui.common.formatLocalTime
+import com.shuremind.ui.common.impactLevelLabelRes
 import com.shuremind.ui.common.labelRes
 import com.shuremind.ui.common.shortLabelRes
+import com.shuremind.ui.common.urgencyLevelLabelRes
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -127,8 +130,14 @@ fun TaskDetailScreen(
                     )
                 }
             }
-            StepperRow(R.string.field_impact, state.impact, viewModel::setImpact)
-            StepperRow(R.string.field_urgency, state.urgency, viewModel::setUrgency)
+            LeveledStepperRow(
+                R.string.field_impact, state.impact, viewModel::setImpact, ::impactLevelLabelRes,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            LeveledStepperRow(
+                R.string.field_urgency, state.urgency, viewModel::setUrgency, ::urgencyLevelLabelRes,
+                modifier = Modifier.padding(top = 8.dp)
+            )
             OutlinedTextField(
                 value = state.estimatedCost,
                 onValueChange = viewModel::setEstimatedCost,
@@ -395,7 +404,17 @@ fun TaskDetailScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             SectionTitle(R.string.detail_section_tags)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // D-39 tag picker: existing tags are tappable toggles so the user never retypes one.
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.allTags.forEach { tag ->
+                    FilterChip(
+                        selected = tag in state.tags,
+                        onClick = { viewModel.toggleTag(tag) },
+                        label = { Text(tag) }
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
                 OutlinedTextField(
                     value = state.tagInput,
                     onValueChange = viewModel::setTagInput,
@@ -407,20 +426,23 @@ fun TaskDetailScreen(
                     Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.capture_add_tag))
                 }
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-                state.tags.forEach { tag ->
-                    InputChip(
-                        selected = false,
-                        onClick = { viewModel.removeTag(tag) },
-                        label = { Text(tag) },
-                        trailingIcon = {
-                            Icon(
-                                Icons.Filled.Close,
-                                contentDescription = stringResource(R.string.capture_remove_tag),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    )
+            val freshTags = state.tags - state.allTags.toSet()
+            if (freshTags.isNotEmpty()) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                    freshTags.forEach { tag ->
+                        InputChip(
+                            selected = false,
+                            onClick = { viewModel.removeTag(tag) },
+                            label = { Text(tag) },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Filled.Close,
+                                    contentDescription = stringResource(R.string.capture_remove_tag),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -532,22 +554,6 @@ private fun SectionTitle(res: Int, topPadding: androidx.compose.ui.unit.Dp = 0.d
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(top = topPadding, bottom = 8.dp)
     )
-}
-
-@Composable
-private fun StepperRow(labelRes: Int, value: Int, onChange: (Int) -> Unit) {
-    Column(modifier = Modifier.padding(top = 8.dp)) {
-        Text(stringResource(labelRes))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            (0..3).forEach { level ->
-                FilterChip(
-                    selected = value == level,
-                    onClick = { onChange(level) },
-                    label = { Text(level.toString()) }
-                )
-            }
-        }
-    }
 }
 
 @Composable

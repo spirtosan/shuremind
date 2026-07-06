@@ -80,4 +80,30 @@ class PriorityEngineTest {
         assertEquals(true, farScore < nearScore)
         assertEquals(true, nearScore < overdueScore)
     }
+
+    // --- D-39: priority chip color bands (boundaries 39/40, 59/60, 79/80) ---
+
+    @Test
+    fun `39 is neutral and 40 is blue`() {
+        assertEquals(PriorityBand.NEUTRAL, PriorityEngine.bandFor(39))
+        assertEquals(PriorityBand.BLUE, PriorityEngine.bandFor(40))
+    }
+
+    @Test
+    fun `59 is blue and 60 is orange`() {
+        assertEquals(PriorityBand.BLUE, PriorityEngine.bandFor(59))
+        assertEquals(PriorityBand.ORANGE, PriorityEngine.bandFor(60))
+    }
+
+    @Test
+    fun `79 is orange and 80 is red`() {
+        assertEquals(PriorityBand.ORANGE, PriorityEngine.bandFor(79))
+        assertEquals(PriorityBand.RED, PriorityEngine.bandFor(80))
+    }
+
+    @Test
+    fun `0 is neutral and 100 is red`() {
+        assertEquals(PriorityBand.NEUTRAL, PriorityEngine.bandFor(0))
+        assertEquals(PriorityBand.RED, PriorityEngine.bandFor(100))
+    }
 }

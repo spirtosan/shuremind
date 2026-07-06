@@ -79,7 +79,7 @@ fun TaskItemRow(
             }
         }
         item.score?.let { score ->
-            Text(score.toString(), style = MaterialTheme.typography.titleMedium)
+            PriorityChip(score = score)
         }
         IconButton(onClick = onDone) {
             Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.action_done))

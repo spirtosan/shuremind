@@ -29,6 +29,11 @@ object EngineTuning {
     const val OVERDUE_URGENCY_BOOST: Double = 3.0
     const val DEFAULT_URGENCY_BOOST: Double = 0.0 // > 30 days out
 
+    // --- Priority chip color bands (D-39): score is 0-100; upper bound of each band below RED. ---
+    const val PRIORITY_BAND_NEUTRAL_MAX: Int = 39
+    const val PRIORITY_BAND_BLUE_MAX: Int = 59
+    const val PRIORITY_BAND_ORANGE_MAX: Int = 79
+
     // --- Deadline escalation curve (DEADLINE only, DATA_MODEL.md "Deadline escalation") ---
     data class EscalationRule(val maxDaysToDue: Long, val remindersPerDay: Int)
 

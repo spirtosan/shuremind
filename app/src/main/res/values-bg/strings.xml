@@ -82,6 +82,16 @@
     <string name="field_notes">Бележки</string>
     <string name="field_impact">Значимост</string>
     <string name="field_urgency">Спешност</string>
+
+    <!-- D-39: impact/urgency word labels shown with the 0-3 number -->
+    <string name="impact_level_0">Без значение</string>
+    <string name="impact_level_1">Малка</string>
+    <string name="impact_level_2">Важна</string>
+    <string name="impact_level_3">Критична</string>
+    <string name="urgency_level_0">Когато и да е</string>
+    <string name="urgency_level_1">Обичайна</string>
+    <string name="urgency_level_2">Скоро</string>
+    <string name="urgency_level_3">Сега</string>
     <string name="field_cost">Очакван разход</string>
     <string name="field_due_date">Дата на падеж</string>
     <string name="field_due_time">Час (празно = цял ден)</string>

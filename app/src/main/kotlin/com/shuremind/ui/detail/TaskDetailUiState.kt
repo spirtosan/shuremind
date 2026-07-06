@@ -50,6 +50,8 @@ data class TaskDetailUiState(
     val dateLearnedTime: String? = null,
     val reminderOffsets: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
+    /** D-39 tag picker: every existing tag name in the system, shown as toggle chips so the user never retypes one. */
+    val allTags: List<String> = emptyList(),
     val tagInput: String = "",
     val justSaved: Boolean = false,
     val justDeleted: Boolean = false

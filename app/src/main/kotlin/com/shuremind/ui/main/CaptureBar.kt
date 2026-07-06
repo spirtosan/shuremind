@@ -36,10 +36,13 @@ import com.shuremind.R
 import com.shuremind.engine.TaskType
 import com.shuremind.ui.common.AppDatePickerDialog
 import com.shuremind.ui.common.AppTimePickerDialog
+import com.shuremind.ui.common.LeveledStepperRow
 import com.shuremind.ui.common.currentLocale
 import com.shuremind.ui.common.formatLocalDate
 import com.shuremind.ui.common.formatLocalTime
+import com.shuremind.ui.common.impactLevelLabelRes
 import com.shuremind.ui.common.labelRes
+import com.shuremind.ui.common.urgencyLevelLabelRes
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -104,27 +107,14 @@ fun CaptureBar(
                         }
                     }
 
-                    Text(stringResource(R.string.capture_impact_label), modifier = Modifier.padding(top = 8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        (0..3).forEach { level ->
-                            FilterChip(
-                                selected = state.impact == level,
-                                onClick = { onImpactChange(level) },
-                                label = { Text(level.toString()) }
-                            )
-                        }
-                    }
-
-                    Text(stringResource(R.string.capture_urgency_label), modifier = Modifier.padding(top = 8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        (0..3).forEach { level ->
-                            FilterChip(
-                                selected = state.urgency == level,
-                                onClick = { onUrgencyChange(level) },
-                                label = { Text(level.toString()) }
-                            )
-                        }
-                    }
+                    LeveledStepperRow(
+                        R.string.capture_impact_label, state.impact, onImpactChange, ::impactLevelLabelRes,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    LeveledStepperRow(
+                        R.string.capture_urgency_label, state.urgency, onUrgencyChange, ::urgencyLevelLabelRes,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
 
                     Text(stringResource(R.string.capture_tags_label), modifier = Modifier.padding(top = 8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

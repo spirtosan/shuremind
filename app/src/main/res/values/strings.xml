@@ -87,6 +87,16 @@
     <string name="field_notes">Notes</string>
     <string name="field_impact">Impact</string>
     <string name="field_urgency">Urgency</string>
+
+    <!-- D-39: impact/urgency word labels shown with the 0-3 number -->
+    <string name="impact_level_0">None / trivial</string>
+    <string name="impact_level_1">Minor</string>
+    <string name="impact_level_2">Important</string>
+    <string name="impact_level_3">Critical</string>
+    <string name="urgency_level_0">Whenever</string>
+    <string name="urgency_level_1">Normal</string>
+    <string name="urgency_level_2">Soon</string>
+    <string name="urgency_level_3">Now</string>
     <string name="field_cost">Estimated cost</string>
     <string name="field_due_date">Due date</string>
     <string name="field_due_time">Due time (empty = all-day)</string>

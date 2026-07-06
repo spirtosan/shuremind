@@ -29,6 +29,22 @@ fun RecurrenceAnchor.labelRes(): Int = when (this) {
     RecurrenceAnchor.COMPLETION -> R.string.rec_anchor_completion
 }
 
+/** D-39: word label shown alongside the 0-3 impact number ("what happens if skipped"). */
+fun impactLevelLabelRes(level: Int): Int = when (level) {
+    0 -> R.string.impact_level_0
+    1 -> R.string.impact_level_1
+    2 -> R.string.impact_level_2
+    else -> R.string.impact_level_3
+}
+
+/** D-39: word label shown alongside the 0-3 urgency number ("how soon it matters"). */
+fun urgencyLevelLabelRes(level: Int): Int = when (level) {
+    0 -> R.string.urgency_level_0
+    1 -> R.string.urgency_level_1
+    2 -> R.string.urgency_level_2
+    else -> R.string.urgency_level_3
+}
+
 fun OffsetUnit.labelRes(): Int = when (this) {
     OffsetUnit.MINUTES -> R.string.reminder_offset_unit_minutes
     OffsetUnit.HOURS -> R.string.reminder_offset_unit_hours

@@ -23,15 +23,15 @@
     <string name="capture_clear_date">Clear date</string>
     <string name="capture_clear_time">Clear time</string>
 
-    <!-- Task types -->
+    <!-- Task types: plain-language UI labels (D-38); enum constant names are unrelated wire format (D-34) -->
     <string name="task_type_event">Event</string>
-    <string name="task_type_anniversary">Anniversary</string>
+    <string name="task_type_anniversary">Anniversary (yearly)</string>
     <string name="task_type_deadline">Deadline</string>
-    <string name="task_type_window">Window</string>
-    <string name="task_type_nag">Nag</string>
-    <string name="task_type_recurring">Recurring</string>
-    <string name="task_type_consumable">Consumable</string>
-    <string name="task_type_someday">Someday</string>
+    <string name="task_type_window">Date not known yet</string>
+    <string name="task_type_nag">Repeat until done</string>
+    <string name="task_type_recurring">Regular schedule</string>
+    <string name="task_type_consumable">Supply / stock</string>
+    <string name="task_type_someday">Someday (no reminders)</string>
 
     <!-- Tag filter -->
     <string name="tag_filter_all">All</string>

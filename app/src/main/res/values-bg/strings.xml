@@ -24,15 +24,15 @@
     <string name="capture_clear_date">Изчисти дата</string>
     <string name="capture_clear_time">Изчисти час</string>
 
-    <!-- Task types -->
+    <!-- Task types: plain-language UI labels (D-38); enum constant names are unrelated wire format (D-34) -->
     <string name="task_type_event">Събитие</string>
-    <string name="task_type_anniversary">Годишнина</string>
+    <string name="task_type_anniversary">Годишнина (всяка година)</string>
     <string name="task_type_deadline">Краен срок</string>
-    <string name="task_type_window">Прозорец</string>
-    <string name="task_type_nag">Напомняне</string>
-    <string name="task_type_recurring">Повтарящо се</string>
-    <string name="task_type_consumable">Консуматив</string>
-    <string name="task_type_someday">Някой ден</string>
+    <string name="task_type_window">Датата още не е известна</string>
+    <string name="task_type_nag">Повтаряй до изпълнение</string>
+    <string name="task_type_recurring">Редовен график</string>
+    <string name="task_type_consumable">Запас / консуматив</string>
+    <string name="task_type_someday">Някой ден (без напомняния)</string>
 
     <!-- Tag filter -->
     <string name="tag_filter_all">Всички</string>

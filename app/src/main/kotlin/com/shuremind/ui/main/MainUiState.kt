@@ -34,7 +34,9 @@ data class QuickCaptureState(
     val tagInput: String = "",
     val dueLocalDate: String? = null,
     val dueLocalTime: String? = null,
-    val estimatedCost: String = ""
+    val estimatedCost: String = "",
+    /** D-42: opt-in per-task alarm mode; toggle hidden for SOMEDAY (never schedules anything). */
+    val alarmMode: Boolean = false
 ) {
     val canSave: Boolean get() = title.isNotBlank()
 }

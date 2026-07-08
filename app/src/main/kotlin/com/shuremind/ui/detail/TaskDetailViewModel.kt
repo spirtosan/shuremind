@@ -64,6 +64,7 @@ class TaskDetailViewModel(
                 impact = task.impact,
                 urgency = task.urgency,
                 estimatedCost = task.estimatedCost?.toString() ?: "",
+                alarmMode = task.alarmMode,
                 dueLocalDate = task.dueLocalDate,
                 dueLocalTime = task.dueLocalTime,
                 notBefore = task.notBefore,
@@ -111,6 +112,7 @@ class TaskDetailViewModel(
     fun setImpact(value: Int) = update { it.copy(impact = value) }
     fun setUrgency(value: Int) = update { it.copy(urgency = value) }
     fun setEstimatedCost(value: String) = update { it.copy(estimatedCost = value) }
+    fun setAlarmMode(value: Boolean) = update { it.copy(alarmMode = value) }
     fun setDueLocalDate(value: String?) = update { it.copy(dueLocalDate = value) }
     fun setDueLocalTime(value: String?) = update { it.copy(dueLocalTime = value) }
     fun setNotBefore(value: String?) = update { it.copy(notBefore = value) }
@@ -207,6 +209,7 @@ class TaskDetailViewModel(
                 impact = state.impact,
                 urgency = state.urgency,
                 estimatedCost = state.estimatedCost.toDoubleOrNull(),
+                alarmMode = state.alarmMode,
                 dueLocalDate = state.dueLocalDate,
                 dueLocalTime = state.dueLocalTime,
                 notBefore = state.notBefore,

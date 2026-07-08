@@ -21,6 +21,8 @@ data class TaskDetailUiState(
     val impact: Int = 1,
     val urgency: Int = 1,
     val estimatedCost: String = "",
+    /** D-42: opt-in per-task alarm mode; toggle hidden for SOMEDAY (never schedules anything). */
+    val alarmMode: Boolean = false,
     val dueLocalDate: String? = null,
     val dueLocalTime: String? = null,
     val notBefore: String? = null,

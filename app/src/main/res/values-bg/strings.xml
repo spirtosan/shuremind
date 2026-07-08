@@ -51,6 +51,7 @@
     <string name="action_done">Готово</string>
     <string name="action_skip">Пропусни</string>
     <string name="action_snooze">Отложи</string>
+    <string name="action_dismiss">Отхвърли</string>
     <string name="snoozed_until_label">Отложено до %1$s</string>
 
     <plurals name="snooze_minutes">
@@ -83,6 +84,8 @@
 
     <string name="field_title">Заглавие</string>
     <string name="field_notes">Бележки</string>
+    <!-- M7: per-task alarm mode (D-42) -->
+    <string name="field_alarm_mode">Звъни като аларма</string>
     <string name="field_impact">Значимост</string>
     <string name="field_urgency">Спешност</string>
 
@@ -255,6 +258,8 @@
     <string name="channel_nag_description">Напомняния, които се повтарят до изпълнение</string>
     <string name="channel_overdue_summary_name">Обобщение на просрочени</string>
     <string name="channel_overdue_summary_description">Обобщение на напомняния, пропуснати докато устройството е било изключено или в сън</string>
+    <string name="channel_alarm_name">Аларми</string>
+    <string name="channel_alarm_description">Напомняния като аларма — силни, без значение от тихите часове</string>
     <plurals name="overdue_summary_title">
         <item quantity="one">%d просрочено напомняне</item>
         <item quantity="other">%d просрочени напомняния</item>
@@ -321,6 +326,7 @@
     <string name="help_tags">Етикетите са споделени обозначения като #пазаруване или #вкъщи — докоснете съществуващ, за да го добавите, или въведете ново име, за да създадете.</string>
     <string name="help_priority_chip">Числото е приоритетният резултат на задачата (0–100): съчетава значимост, спешност и колко близо е крайният срок. Сиво е ниско, синьо е средно, оранжево е високо, а червено е много високо или просрочено.</string>
     <string name="help_weekly_review">Седмичен преглед на всичко лесно за забравяне: елементи „Някой ден“, задачи, които са се занемарили, и задачи „Прозорец“, чакащи дата. За всяка решете дали да я изпълните, отложите, изтриете или просто оставите за следващия път.</string>
+    <string name="help_alarm_mode">Звъни като будилник вместо обикновено известие — силно, показва се на заключения екран и не зачита тихите часове. Ранните напомняния и (за крайни срокове) ескалиращите напомняния пристигат както обикновено известие.</string>
 
     <string name="help_settings_quiet_hours">През тези часове няма да прозвучат напомняния; всичко, което е трябвало да се задейства тогава, се доставя веднага след края на тихите часове.</string>
     <string name="help_settings_reminder_offsets">Това са напомнянията по подразбиране при създаване на ново Събитие, Годишнина или Краен срок — можете да ги промените за всяка задача поотделно.</string>

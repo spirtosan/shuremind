@@ -50,6 +50,7 @@
     <string name="action_done">Done</string>
     <string name="action_skip">Skip</string>
     <string name="action_snooze">Snooze</string>
+    <string name="action_dismiss">Dismiss</string>
     <string name="snoozed_until_label">Snoozed until %1$s</string>
 
     <plurals name="snooze_minutes">
@@ -88,6 +89,8 @@
 
     <string name="field_title">Title</string>
     <string name="field_notes">Notes</string>
+    <!-- M7: per-task alarm mode (D-42) -->
+    <string name="field_alarm_mode">Ring as alarm</string>
     <string name="field_impact">Impact</string>
     <string name="field_urgency">Urgency</string>
 
@@ -280,6 +283,8 @@
     <string name="channel_nag_description">Repeating reminders until done</string>
     <string name="channel_overdue_summary_name">Overdue summary</string>
     <string name="channel_overdue_summary_description">Summary of reminders missed while your device was off or asleep</string>
+    <string name="channel_alarm_name">Alarms</string>
+    <string name="channel_alarm_description">Ring-as-alarm reminders — loud, ignores quiet hours</string>
     <plurals name="overdue_summary_title">
         <item quantity="one">%d overdue reminder</item>
         <item quantity="few">%d overdue reminders</item>
@@ -348,6 +353,7 @@
     <string name="help_tags">Tags are shared labels like #shop or #home — tap an existing one to add it, or type a new name to create one.</string>
     <string name="help_priority_chip">The number is the task\'s priority score (0–100): it combines impact, urgency, and how close the due date is. Gray is low, blue is medium, orange is high, and red is very high or overdue.</string>
     <string name="help_weekly_review">A weekly pass through anything easy to forget: Someday items, tasks that have gone stale, and Window tasks waiting for a date. For each one, decide whether to do it, snooze it, delete it, or just leave it for next time.</string>
+    <string name="help_alarm_mode">Rings like an alarm clock instead of a normal notification — loud, shows on the lock screen, and ignores quiet hours. Lead-time reminders and (for Deadlines) the escalation reminders still arrive as normal notifications.</string>
 
     <string name="help_settings_quiet_hours">No reminders will sound during these hours; anything due then is delivered right after quiet hours end.</string>
     <string name="help_settings_reminder_offsets">These are the default lead times used when you create a new Event, Anniversary, or Deadline — you can still change them per task.</string>

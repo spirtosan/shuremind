@@ -21,7 +21,9 @@ data class TaskFireInput(
     val lastDoneAt: ZonedDateTime? = null,
     val snoozedUntil: ZonedDateTime? = null,
     /** ReminderRule.offsetIso values for this task (EVENT/ANNIVERSARY/DEADLINE only; ignored otherwise). */
-    val reminderOffsets: List<String> = emptyList()
+    val reminderOffsets: List<String> = emptyList(),
+    /** D-42: opt-in per-task alarm mode. Only the OCCURRENCE-reason fire is ever an alarm fire. */
+    val alarmMode: Boolean = false
 )
 
 /**
@@ -39,10 +41,15 @@ object FireInstantEngine {
 
     enum class FireReason { OCCURRENCE, REMINDER_LEAD, ESCALATION, SNOOZE }
 
-    /** [occurrenceAnchor] is the underlying due/occurrence instant this fire refers to (for notification identity/grouping). */
-    data class FireInstant(val at: ZonedDateTime, val reason: FireReason, val occurrenceAnchor: ZonedDateTime)
+    /**
+     * [occurrenceAnchor] is the underlying due/occurrence instant this fire refers to (for
+     * notification identity/grouping). [isAlarm] (D-42): true only for an alarm-mode task's
+     * OCCURRENCE-reason fire — lead-time reminders, escalation slots and snoozes are never alarms,
+     * even on an alarm-mode task, and stay subject to quiet-hours deferral as before.
+     */
+    data class FireInstant(val at: ZonedDateTime, val reason: FireReason, val occurrenceAnchor: ZonedDateTime, val isAlarm: Boolean = false)
 
-    data class GlobalFire(val taskId: String, val occurrenceLocal: String, val reason: FireReason, val at: ZonedDateTime)
+    data class GlobalFire(val taskId: String, val occurrenceLocal: String, val reason: FireReason, val at: ZonedDateTime, val isAlarm: Boolean = false)
 
     /** Only these types get lead-time ReminderRule offsets (DATA_MODEL.md: "RECURRING/NAG fire at occurrence time"). */
     val LEAD_REMINDER_TYPES = setOf(TaskType.EVENT, TaskType.ANNIVERSARY, TaskType.DEADLINE)
@@ -65,7 +72,7 @@ object FireInstantEngine {
         val occurrence = OccurrenceEngine.nextOccurrence(schedule, zone, now, input.createdAt, input.lastDoneAt)
             ?: return null
 
-        val candidates = mutableListOf(FireInstant(occurrence, FireReason.OCCURRENCE, occurrence))
+        val candidates = mutableListOf(FireInstant(occurrence, FireReason.OCCURRENCE, occurrence, isAlarm = input.alarmMode))
 
         if (schedule.type in LEAD_REMINDER_TYPES) {
             for (offsetIso in input.reminderOffsets) {
@@ -79,8 +86,9 @@ object FireInstantEngine {
             if (slot != null) candidates += FireInstant(slot, FireReason.ESCALATION, occurrence)
         }
 
+        // D-42: an alarm fire ignores quiet hours entirely; everything else defers as before.
         return candidates
-            .map { it.copy(at = QuietHours.deferIfInside(it.at, settings.quietHoursStart, settings.quietHoursEnd, zone)) }
+            .map { if (it.isAlarm) it else it.copy(at = QuietHours.deferIfInside(it.at, settings.quietHoursStart, settings.quietHoursEnd, zone)) }
             .filter { !it.at.isBefore(now) }
             .minByOrNull { it.at }
     }
@@ -90,7 +98,7 @@ object FireInstantEngine {
         val perTask = inputs.mapNotNull { input -> computeNextFire(input, zone, now, settings)?.let { input.taskId to it } }
         val globalAt = perTask.minOfOrNull { it.second.at } ?: return null
         val due = perTask.filter { it.second.at == globalAt }.map { (taskId, fire) ->
-            GlobalFire(taskId, OccurrenceLocalFormat.format(fire.occurrenceAnchor), fire.reason, fire.at)
+            GlobalFire(taskId, OccurrenceLocalFormat.format(fire.occurrenceAnchor), fire.reason, fire.at, fire.isAlarm)
         }
         return globalAt to due
     }
@@ -109,7 +117,7 @@ object FireInstantEngine {
             while (steps < MAX_MISSED_STEPS) {
                 val fire = computeNextFire(input, zone, cursor, settings) ?: break
                 if (fire.at.isAfter(now)) break
-                missed += GlobalFire(input.taskId, OccurrenceLocalFormat.format(fire.occurrenceAnchor), fire.reason, fire.at)
+                missed += GlobalFire(input.taskId, OccurrenceLocalFormat.format(fire.occurrenceAnchor), fire.reason, fire.at, fire.isAlarm)
                 cursor = fire.at.plusSeconds(1)
                 steps++
             }

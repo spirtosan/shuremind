@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.shuremind.data.AppDatabase
+import com.shuremind.data.MIGRATION_2_3
 import com.shuremind.data.backup.BackupRepository
 import com.shuremind.data.backup.ImportRepository
 import com.shuremind.data.backup.RoomBackupRepository
@@ -55,7 +56,7 @@ class AppContainer(context: Context) {
         context.applicationContext,
         AppDatabase::class.java,
         AppDatabase.DATABASE_NAME
-    ).build()
+    ).addMigrations(MIGRATION_2_3).build()
 
     // Repository writes that can change scheduling call back into RecomputeAndRearm via this hook
     // (CLAUDE.md STEP 3: "wire via repository-level hooks, not scattered UI calls"). RecomputeAndRearm

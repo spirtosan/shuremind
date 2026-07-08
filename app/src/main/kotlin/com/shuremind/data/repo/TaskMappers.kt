@@ -68,5 +68,6 @@ fun TaskEntity.toFireInput(zone: ZoneId, reminderOffsets: List<String>, lastDone
         createdAt = Instant.ofEpochMilli(createdAt).atZone(zone),
         lastDoneAt = lastDoneAt,
         snoozedUntil = snoozedUntil?.let { Instant.ofEpochMilli(it).atZone(zone) },
-        reminderOffsets = if (type in FireInstantEngine.LEAD_REMINDER_TYPES) reminderOffsets else emptyList()
+        reminderOffsets = if (type in FireInstantEngine.LEAD_REMINDER_TYPES) reminderOffsets else emptyList(),
+        alarmMode = alarmMode
     )

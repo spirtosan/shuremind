@@ -147,6 +147,7 @@ class MainViewModel(
     fun setCaptureDueDate(isoDate: String?) = updateCapture { it.copy(dueLocalDate = isoDate) }
     fun setCaptureDueTime(isoTime: String?) = updateCapture { it.copy(dueLocalTime = isoTime) }
     fun setCaptureCost(cost: String) = updateCapture { it.copy(estimatedCost = cost) }
+    fun setCaptureAlarmMode(alarmMode: Boolean) = updateCapture { it.copy(alarmMode = alarmMode) }
 
     fun addCaptureTag() {
         val name = _capture.value.tagInput.trim()
@@ -198,6 +199,7 @@ class MainViewModel(
                 meterInterval = null,
                 lastDoneMeter = null,
                 windowHint = null,
+                alarmMode = state.alarmMode,
                 snoozedUntil = null,
                 nextFireAt = null,
                 createdAt = now,

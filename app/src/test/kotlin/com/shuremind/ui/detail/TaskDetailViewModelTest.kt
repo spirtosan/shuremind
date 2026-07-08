@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -181,5 +182,23 @@ class TaskDetailViewModelTest {
         val updated = taskRepository.getById("meds")!!
         assertEquals(30.0, updated.stockQty)
         assertEquals("2026-07-05", updated.stockRecordedAt)
+    }
+
+    // --- D-42: per-task alarm mode ---
+
+    @Test
+    fun `alarm mode loads from the task and persists on save`() = runTest(dispatcher) {
+        val taskRepository = FakeTaskRepository(listOf(fixtureTask("t1", type = TaskType.EVENT, alarmMode = true)))
+        val vm = viewModel(taskRepository)
+
+        vm.load("t1")
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.uiState.value.alarmMode)
+
+        vm.setAlarmMode(false)
+        vm.save()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(taskRepository.getById("t1")!!.alarmMode)
     }
 }

@@ -47,7 +47,8 @@ fun fixtureTask(
     deletedAt: Long? = null,
     meterName: String? = null,
     meterInterval: Double? = null,
-    lastDoneMeter: Double? = null
+    lastDoneMeter: Double? = null,
+    alarmMode: Boolean = false
 ): TaskEntity = TaskEntity(
     id = id,
     title = title,
@@ -76,6 +77,7 @@ fun fixtureTask(
     meterInterval = meterInterval,
     lastDoneMeter = lastDoneMeter,
     windowHint = null,
+    alarmMode = alarmMode,
     snoozedUntil = snoozedUntil,
     nextFireAt = nextFireAt,
     createdAt = createdAt,

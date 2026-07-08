@@ -77,7 +77,9 @@ class ExportImportRoundTripTest {
     )
 
     private val tasks = TaskType.entries.mapIndexed { index, type ->
-        baseTask(id = "task-$index-${type.name}", type = type)
+        // D-42: EVENT (index 0) also covers the alarmMode=true round trip; every other type stays
+        // at the field default (false), so the full false/true range is exercised across the set.
+        baseTask(id = "task-$index-${type.name}", type = type).let { if (type == TaskType.EVENT) it.copy(alarmMode = true) else it }
     } + baseTask(id = "task-deleted", type = TaskType.EVENT, status = TaskStatus.DONE, deletedAt = 1_699_600_000_000L)
 
     private val reminderRules = listOf(
@@ -245,5 +247,21 @@ class ExportImportRoundTripTest {
         val result = ImportEngine.parse(withUnknownKey)
 
         assertTrue(result is ImportEngine.ParseResult.Success)
+    }
+
+    // --- D-42: alarm_mode was added after schema_version 1 shipped; old backup files never had this key ---
+
+    @Test
+    fun `a pre-M7 backup file without alarm_mode imports with every task defaulting to false`() {
+        val file = ExportEngine.buildExportFile(snapshot, appVersion = "0.1", exportedAt = 0L)
+        val json = ExportEngine.toJson(file)
+        check(json.contains("\"alarm_mode\":true")) { "fixture must contain at least one alarmMode=true task to make this test meaningful" }
+        val oldFormatJson = json.replace(Regex(",\"alarm_mode\":(true|false)"), "")
+
+        val result = ImportEngine.parse(oldFormatJson)
+
+        check(result is ImportEngine.ParseResult.Success)
+        assertTrue(result.file.tasks.isNotEmpty())
+        assertTrue(result.file.tasks.all { !it.alarmMode })
     }
 }

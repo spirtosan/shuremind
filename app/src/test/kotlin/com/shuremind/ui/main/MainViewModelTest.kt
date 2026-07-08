@@ -195,6 +195,24 @@ class MainViewModelTest {
         assertTrue(vm.capture.value.tags.isEmpty())
     }
 
+    // --- D-42: per-task alarm mode ---
+
+    @Test
+    fun `capture alarm mode defaults off and is saved on the created task when turned on`() = runTest(dispatcher) {
+        val taskRepository = FakeTaskRepository()
+        val vm = viewModel(taskRepository = taskRepository)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(vm.capture.value.alarmMode)
+
+        vm.setCaptureTitle("Take medicine")
+        vm.setCaptureAlarmMode(true)
+        vm.saveCapture()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(taskRepository.tasks.single().alarmMode)
+    }
+
     @Test
     fun `snooze only writes snoozed_until on the task repository`() = runTest(dispatcher) {
         val task = fixtureTask("water-flowers", nextFireAt = now)

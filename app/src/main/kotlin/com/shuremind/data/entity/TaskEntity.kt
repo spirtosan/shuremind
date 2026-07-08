@@ -46,6 +46,8 @@ data class TaskEntity(
     @ColumnInfo(name = "meter_interval") val meterInterval: Double?,
     @ColumnInfo(name = "last_done_meter") val lastDoneMeter: Double?,
     @ColumnInfo(name = "window_hint") val windowHint: String?,
+    /** D-42: opt-in per-task alarm mode (Room v3, additive). Available on all types except SOMEDAY. */
+    @ColumnInfo(name = "alarm_mode", defaultValue = "0") val alarmMode: Boolean = false,
     @ColumnInfo(name = "snoozed_until") val snoozedUntil: Long?,
     @ColumnInfo(name = "next_fire_at") val nextFireAt: Long?,
     @ColumnInfo(name = "created_at") val createdAt: Long,

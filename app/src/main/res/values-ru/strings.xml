@@ -51,6 +51,7 @@
     <string name="action_done">Готово</string>
     <string name="action_skip">Пропустить</string>
     <string name="action_snooze">Отложить</string>
+    <string name="action_dismiss">Отклонить</string>
     <string name="snoozed_until_label">Отложено до %1$s</string>
 
     <plurals name="snooze_minutes">
@@ -89,6 +90,8 @@
 
     <string name="field_title">Название</string>
     <string name="field_notes">Заметки</string>
+    <!-- M7: per-task alarm mode (D-42) -->
+    <string name="field_alarm_mode">Звонить как будильник</string>
     <string name="field_impact">Значимость</string>
     <string name="field_urgency">Срочность</string>
 
@@ -281,6 +284,8 @@
     <string name="channel_nag_description">Напоминания, повторяющиеся до выполнения</string>
     <string name="channel_overdue_summary_name">Сводка просроченных</string>
     <string name="channel_overdue_summary_description">Сводка напоминаний, пропущенных пока устройство было выключено или спало</string>
+    <string name="channel_alarm_name">Будильники</string>
+    <string name="channel_alarm_description">Напоминания-будильники — громкие, не зависят от тихих часов</string>
     <plurals name="overdue_summary_title">
         <item quantity="one">%d просроченное напоминание</item>
         <item quantity="few">%d просроченных напоминания</item>
@@ -349,6 +354,7 @@
     <string name="help_tags">Теги — это общие метки вроде #покупки или #дом — нажмите на существующий, чтобы добавить, или введите новое имя, чтобы создать.</string>
     <string name="help_priority_chip">Число — это показатель приоритета задачи (0–100): сочетает значимость, срочность и близость срока. Серый — низкий, синий — средний, оранжевый — высокий, красный — очень высокий или просрочено.</string>
     <string name="help_weekly_review">Еженедельный просмотр всего, что легко забыть: задачи «Когда-нибудь», задачи, которые давно просрочены, и задачи «Окно», ожидающие дату. Для каждой решите: выполнить, отложить, удалить или оставить на следующий раз.</string>
+    <string name="help_alarm_mode">Звонит как будильник вместо обычного уведомления — громко, отображается на экране блокировки и не учитывает тихие часы. Заблаговременные напоминания и (для крайних сроков) эскалация по-прежнему приходят как обычные уведомления.</string>
 
     <string name="help_settings_quiet_hours">В эти часы напоминания не звучат; всё, что должно было сработать в это время, доставляется сразу после окончания тихих часов.</string>
     <string name="help_settings_reminder_offsets">Это напоминания по умолчанию при создании нового События, Годовщины или Крайнего срока — их можно изменить для каждой задачи отдельно.</string>

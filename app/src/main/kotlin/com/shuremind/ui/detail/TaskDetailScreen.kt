@@ -28,6 +28,7 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -160,6 +161,21 @@ fun TaskDetailScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             )
+            // D-42: opt-in per-task alarm mode; hidden for SOMEDAY, which never schedules anything.
+            if (state.type != TaskType.SOMEDAY) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.field_alarm_mode))
+                        HelpDotWithDialog(R.string.help_alarm_mode)
+                    }
+                    Switch(checked = state.alarmMode, onCheckedChange = viewModel::setAlarmMode)
+                }
+            }
 
             if (state.type in setOf(TaskType.EVENT, TaskType.ANNIVERSARY, TaskType.DEADLINE)) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))

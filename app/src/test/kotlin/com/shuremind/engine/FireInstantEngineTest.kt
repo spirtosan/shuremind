@@ -1,6 +1,7 @@
 package com.shuremind.engine
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -187,6 +188,113 @@ class FireInstantEngineTest {
         val now = ZonedDateTime.of(2026, 8, 1, 0, 0, 0, 0, zone)
         val fire = FireInstantEngine.computeNextFire(input, zone, now, settings)
         assertEquals(ZonedDateTime.of(2026, 8, 20, 8, 0, 0, 0, zone), fire?.at)
+    }
+
+    // --- D-42: alarm-mode occurrence fires ignore quiet hours; everything else keeps deferring ---
+
+    @Test
+    fun `alarm-mode EVENT due inside quiet hours fires exactly on time, not deferred`() {
+        val input = TaskFireInput(
+            taskId = "t1",
+            schedule = TaskSchedule(type = TaskType.EVENT, dueLocalDate = LocalDate.of(2026, 8, 20), dueLocalTime = LocalTime.of(23, 0)),
+            createdAt = createdAt,
+            alarmMode = true
+        )
+        val now = ZonedDateTime.of(2026, 8, 1, 0, 0, 0, 0, zone)
+        val fire = FireInstantEngine.computeNextFire(input, zone, now, settings)
+        assertEquals(FireInstantEngine.FireReason.OCCURRENCE, fire?.reason)
+        assertEquals(ZonedDateTime.of(2026, 8, 20, 23, 0, 0, 0, zone), fire?.at)
+        assertEquals(true, fire?.isAlarm)
+    }
+
+    @Test
+    fun `alarm-mode DEADLINE's own escalation slot still defers to quiet hours, only its occurrence would be exempt`() {
+        // Escalation lands within 2 days of due, at fixed clock times that don't fall in the default
+        // 22:00-08:00 quiet window, so this exercises the "escalation curve unchanged" scoping
+        // directly: alarmMode is on, yet the picked candidate is ESCALATION (not OCCURRENCE) and its
+        // isAlarm flag must be false, exactly like a non-alarm-mode DEADLINE would behave.
+        val input = TaskFireInput(
+            taskId = "t1",
+            schedule = TaskSchedule(type = TaskType.DEADLINE, dueLocalDate = LocalDate.of(2026, 8, 15)),
+            createdAt = createdAt,
+            reminderOffsets = listOf("P14D", "P7D", "P1D"),
+            alarmMode = true
+        )
+        val now = ZonedDateTime.of(2026, 8, 13, 0, 0, 0, 0, zone)
+        val fire = FireInstantEngine.computeNextFire(input, zone, now, settings)
+        assertEquals(FireInstantEngine.FireReason.ESCALATION, fire?.reason)
+        assertEquals(ZonedDateTime.of(2026, 8, 13, 9, 0, 0, 0, zone), fire?.at)
+        assertEquals(false, fire?.isAlarm)
+    }
+
+    @Test
+    fun `mixed queue - globalNext picks the earlier alarm fire and flags only that one as an alarm`() {
+        // Both tasks are nominally due at 22:00 (inside quiet hours): the normal one defers to next
+        // day 08:00, the alarm-mode one fires unchanged at 22:00 — so the truly-earliest instant
+        // globally is the alarm fire alone, not a tie between the two.
+        val alarmInput = TaskFireInput(
+            taskId = "alarm-task",
+            schedule = TaskSchedule(type = TaskType.EVENT, dueLocalDate = LocalDate.of(2026, 8, 20), dueLocalTime = LocalTime.of(22, 0)),
+            createdAt = createdAt,
+            alarmMode = true
+        )
+        val normalInput = TaskFireInput(
+            taskId = "normal-task",
+            schedule = TaskSchedule(type = TaskType.EVENT, dueLocalDate = LocalDate.of(2026, 8, 20), dueLocalTime = LocalTime.of(22, 0)),
+            createdAt = createdAt
+        )
+        val now = ZonedDateTime.of(2026, 8, 1, 0, 0, 0, 0, zone)
+        val (at, due) = FireInstantEngine.globalNext(listOf(alarmInput, normalInput), zone, now, settings)!!
+
+        assertEquals(ZonedDateTime.of(2026, 8, 20, 22, 0, 0, 0, zone), at)
+        assertEquals(listOf("alarm-task"), due.map { it.taskId })
+        assertTrue(due.single().isAlarm)
+    }
+
+    @Test
+    fun `mixed queue - globalNext picks the earlier normal fire and does not flag it as an alarm`() {
+        val normalInput = TaskFireInput(
+            taskId = "normal-task",
+            schedule = TaskSchedule(type = TaskType.EVENT, dueLocalDate = LocalDate.of(2026, 8, 20), dueLocalTime = LocalTime.of(14, 0)),
+            createdAt = createdAt
+        )
+        val alarmInput = TaskFireInput(
+            taskId = "alarm-task",
+            schedule = TaskSchedule(type = TaskType.EVENT, dueLocalDate = LocalDate.of(2026, 9, 1), dueLocalTime = LocalTime.of(9, 0)),
+            createdAt = createdAt,
+            alarmMode = true
+        )
+        val now = ZonedDateTime.of(2026, 8, 1, 0, 0, 0, 0, zone)
+        val (at, due) = FireInstantEngine.globalNext(listOf(normalInput, alarmInput), zone, now, settings)!!
+
+        assertEquals(ZonedDateTime.of(2026, 8, 20, 14, 0, 0, 0, zone), at)
+        assertEquals(listOf("normal-task"), due.map { it.taskId })
+        assertFalse(due.single().isAlarm)
+    }
+
+    @Test
+    fun `alarm-mode EVENT due in the spring-forward DST gap still shifts forward correctly, exempt from quiet hours`() {
+        // Reuses the Bulgaria spring-forward fixture (default quiet hours ON this time, unlike the
+        // lead-time DST tests above — proving alarm-exemption and DST-safety compose correctly).
+        val yearStart = ZonedDateTime.of(2026, 1, 1, 0, 0, 0, 0, zone)
+        val gap = findTransition(yearStart, isGap = true)
+        val transitionDate = gap.dateTimeBefore.toLocalDate()
+        val dueTime = gap.dateTimeBefore.toLocalTime().plusMinutes(30) // nonexistent local time on transitionDate, inside the default quiet window
+
+        val input = TaskFireInput(
+            taskId = "t1",
+            schedule = TaskSchedule(type = TaskType.EVENT, dueLocalDate = transitionDate, dueLocalTime = dueTime),
+            createdAt = createdAt,
+            alarmMode = true
+        )
+        val now = ZonedDateTime.of(transitionDate.minusDays(1), LocalTime.MIDNIGHT, zone)
+        val fire = FireInstantEngine.computeNextFire(input, zone, now, settings)
+
+        assertEquals(FireInstantEngine.FireReason.OCCURRENCE, fire?.reason)
+        assertEquals(true, fire?.isAlarm)
+        assertEquals(transitionDate, fire?.at?.toLocalDate())
+        assertEquals(dueTime.plus(gap.duration), fire?.at?.toLocalTime())
+        assertEquals(gap.offsetAfter, fire?.at?.offset)
     }
 
     // --- (h): exclusions ---

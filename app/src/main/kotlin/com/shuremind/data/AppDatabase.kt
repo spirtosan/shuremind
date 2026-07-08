@@ -26,7 +26,7 @@ import com.shuremind.data.entity.TaskTagEntity
         CompletionLogEntity::class,
         MeterReadingEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 @TypeConverters(EnumConverters::class)

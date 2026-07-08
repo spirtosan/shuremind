@@ -31,6 +31,7 @@ _Room/SQLite. Sync-ready but offline. All IDs are UUIDv4 strings. Timestamps are
 | meter_interval | REAL NULL | e.g. 10000 (km since last_done_meter) |
 | last_done_meter | REAL NULL | meter value at last completion (user estimate allowed) |
 | window_hint | TEXT NULL | WINDOW: free text, e.g. 'usually Sep–Nov' |
+| alarm_mode | INTEGER NOT NULL DEFAULT 0 | opt-in per-task alarm (D-42); available on all types except SOMEDAY; added in schema v3 (Room migration, additive) |
 | snoozed_until | INTEGER NULL | suppress notifications until then |
 | next_fire_at | INTEGER NULL | **derived cache**, indexed — next occurrence instant; recomputed on edit/complete/boot/TZ change |
 | created_at / updated_at | INTEGER | |
@@ -79,6 +80,8 @@ quiet_hours (start/end, default 22:00–08:00), default_all_day_time (09:00), de
 ## Scheduling architecture (decision D-07)
 Exactly **one** AlarmManager alarm is armed at any time = the globally nearest pending fire instant (from next_fire_at, reminder offsets, nag repeats, snoozes, escalation slots). On fire: BroadcastReceiver posts all due notifications, writes nothing it can't recover, recomputes, arms the next alarm. On BOOT_COMPLETED / app open / TZ change / daily WorkManager housekeeping: recompute everything, deliver overdue summary if anything was missed, re-arm. Exact vs inexact per Section-E pattern from fshu audit (`canScheduleExactAlarms()` branch); inexact is acceptable default, exact is opt-in.
 
+D-42: the single armed instant may itself be an alarm-mode task's occurrence fire (never a lead-time reminder or escalation slot — those are never alarms). When it is, the arming call branches to `AlarmManager.setAlarmClock()` instead of the Section-E exact/inexact branch — always exact, no `exact_alarms_opt_in` needed, shows the status-bar alarm icon (tapping it opens MainActivity). Alarm-mode occurrence fires also ignore quiet-hours deferral entirely; everything else (lead-time reminders, DEADLINE escalation slots, snoozes) keeps deferring as before, on both alarm-mode and normal tasks alike. Delivery for an alarm fire uses a dedicated `alarm` notification channel (USAGE_ALARM audio attributes, insistent looping sound) with a full-screen intent to a minimal ring screen (AlarmRingActivity); a separate one-shot AlarmManager timer (keyed by notification id, outside this single-slot mechanism — a sibling like D-32's BackupWorker) auto-silences it after 5 minutes, leaving the notification posted.
+
 ## DST / timezone rule (decision D-06)
 Canonical schedule data = local wall-clock fields. Fire instants are computed via `ZonedDateTime` at scheduling time and cached in next_fire_at. Never add fixed millisecond periods across days. Nonexistent local times (spring-forward) → shift to next valid instant; ambiguous (fall-back) → first occurrence. Unit-test Bulgaria transitions (last Sun of March/October).
 
@@ -90,6 +93,8 @@ Canonical schedule data = local wall-clock fields. Fire instants are computed vi
 
 ## Export JSON (schema_version: 1)
 `{ schema_version, app_version, exported_at, tasks[], reminder_rules[], tags[], task_tags[], completions[], meter_readings[], settings{} }` — full-fidelity, includes soft-deleted rows and `dirty` (sync foundation). Each entity array mirrors its Room columns 1:1 (DTOs, not the live entities — decoupled from the runtime schema on purpose). Import modes: replace-all (v1) — merge is v2. Unknown JSON keys are ignored on import (forward tolerance); `schema_version != 1` and malformed JSON are rejected with typed, localized errors.
+
+D-42: `tasks[].alarm_mode` was added after schema_version 1 shipped; the field carries a Kotlin/serialization default of `false`, so a pre-M7 backup file (missing the key entirely) still imports cleanly with every task's alarm mode off — no `schema_version` bump needed for a purely additive, defaulted field.
 
 `settings{}` (D-30) carries a deliberate *subset* of the DataStore settings — the parts that describe the data, not the device:
 - Included: `quiet_hours_start`/`quiet_hours_end`, `default_all_day_time`, `currency`, `default_reminder_offsets` (per task type), `snooze_presets_minutes` + `default_snooze_duration_minutes`, the D-27/D-28 seed markers (`weekly_review_task_id`, `seeded_meter_names`), and `ui_language` (read from AppCompatDelegate at export time, D-21) — exported for reference only.

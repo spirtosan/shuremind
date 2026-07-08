@@ -6,6 +6,9 @@
          USE_EXACT_ALARM, to keep Play Store distribution open. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- D-42: full-screen intent for the alarm-mode ring screen. Sideload-fine; Play review is a
+         later concern (Session 1 notes) -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:name=".ShuRemindApplication"
@@ -27,6 +30,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- D-42: alarm-mode ring screen, launched only via the alarm notification's full-screen intent. -->
+        <activity
+            android:name=".ui.AlarmRingActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.ShuRemind" />
 
         <!-- D-18: persists the user's picked app language across process death (autoStoreLocales). -->
         <service
@@ -58,6 +71,11 @@
         <!-- M3 STEP 6: Done/Snooze/Skip notification actions. -->
         <receiver
             android:name=".system.NotificationActionReceiver"
+            android:exported="false" />
+
+        <!-- D-42: auto-silences an alarm-mode ring ~5 minutes after it posts. -->
+        <receiver
+            android:name=".system.AlarmSilenceReceiver"
             android:exported="false" />
     </application>
 

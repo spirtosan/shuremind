@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -66,6 +67,7 @@ fun CaptureBar(
     onDueDateChange: (String?) -> Unit,
     onDueTimeChange: (String?) -> Unit,
     onCostChange: (String) -> Unit,
+    onAlarmModeChange: (Boolean) -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -213,6 +215,21 @@ fun CaptureBar(
                         singleLine = true,
                         modifier = Modifier.padding(top = 8.dp)
                     )
+                    // D-42: opt-in per-task alarm mode; hidden for SOMEDAY, which never schedules anything.
+                    if (state.type != TaskType.SOMEDAY) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.field_alarm_mode))
+                                HelpDotWithDialog(R.string.help_alarm_mode)
+                            }
+                            Switch(checked = state.alarmMode, onCheckedChange = onAlarmModeChange)
+                        }
+                    }
                 }
             }
         }

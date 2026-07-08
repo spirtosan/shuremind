@@ -36,11 +36,13 @@ class RecomputeAndRearmTest {
     private class FakeAlarmArmer : AlarmArmer {
         var armedAt: Long? = null
         var armedExact: Boolean? = null
+        var armedIsAlarm: Boolean? = null
         var cancelled: Boolean = false
 
-        override fun arm(atEpochMillis: Long, exactAlarmsOptedIn: Boolean) {
+        override fun arm(atEpochMillis: Long, exactAlarmsOptedIn: Boolean, isAlarm: Boolean) {
             armedAt = atEpochMillis
             armedExact = exactAlarmsOptedIn
+            armedIsAlarm = isAlarm
             cancelled = false
         }
 
@@ -133,6 +135,39 @@ class RecomputeAndRearmTest {
         val expected = ZonedDateTime.of(2026, 8, 20, 14, 0, 0, 0, zone).toInstant().toEpochMilli()
         assertEquals(expected, armer.armedAt)
         assertEquals(expected, taskRepository.getById("t1")?.nextFireAt)
+        assertEquals(false, armer.armedIsAlarm)
+    }
+
+    // --- D-42: alarm-mode arming branch ---
+
+    @Test
+    fun `arms via the alarm branch when the global-next fire belongs to an alarm-mode task`() = runTest {
+        val alarmTask = fixtureTask("alarm-task", type = TaskType.EVENT, alarmMode = true)
+            .copy(dueLocalDate = LocalDate.of(2026, 8, 20).toString(), dueLocalTime = LocalTime.of(14, 0).toString())
+        val normalTask = fixtureTask("normal-task", type = TaskType.EVENT)
+            .copy(dueLocalDate = LocalDate.of(2026, 9, 1).toString(), dueLocalTime = LocalTime.of(9, 0).toString())
+        val armer = FakeAlarmArmer()
+        val now = ZonedDateTime.of(2026, 6, 1, 9, 0, 0, 0, zone)
+
+        useCase(FakeTaskRepository(listOf(alarmTask, normalTask)), alarmArmer = armer).run(now)
+
+        assertEquals(ZonedDateTime.of(2026, 8, 20, 14, 0, 0, 0, zone).toInstant().toEpochMilli(), armer.armedAt)
+        assertEquals(true, armer.armedIsAlarm)
+    }
+
+    @Test
+    fun `arms via the normal branch when the global-next fire is not alarm-mode, even with an alarm-mode task later in the queue`() = runTest {
+        val normalTask = fixtureTask("normal-task", type = TaskType.EVENT)
+            .copy(dueLocalDate = LocalDate.of(2026, 8, 20).toString(), dueLocalTime = LocalTime.of(14, 0).toString())
+        val alarmTask = fixtureTask("alarm-task", type = TaskType.EVENT, alarmMode = true)
+            .copy(dueLocalDate = LocalDate.of(2026, 9, 1).toString(), dueLocalTime = LocalTime.of(9, 0).toString())
+        val armer = FakeAlarmArmer()
+        val now = ZonedDateTime.of(2026, 6, 1, 9, 0, 0, 0, zone)
+
+        useCase(FakeTaskRepository(listOf(normalTask, alarmTask)), alarmArmer = armer).run(now)
+
+        assertEquals(ZonedDateTime.of(2026, 8, 20, 14, 0, 0, 0, zone).toInstant().toEpochMilli(), armer.armedAt)
+        assertEquals(false, armer.armedIsAlarm)
     }
 
     @Test

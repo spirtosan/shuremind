@@ -56,6 +56,8 @@ data class TaskDto(
     @SerialName("meter_interval") val meterInterval: Double?,
     @SerialName("last_done_meter") val lastDoneMeter: Double?,
     @SerialName("window_hint") val windowHint: String?,
+    /** D-42: added after schema_version 1 shipped; defaults to false so pre-M7 backup files (missing this key) import cleanly. */
+    @SerialName("alarm_mode") val alarmMode: Boolean = false,
     @SerialName("snoozed_until") val snoozedUntil: Long?,
     @SerialName("next_fire_at") val nextFireAt: Long?,
     @SerialName("created_at") val createdAt: Long,

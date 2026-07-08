@@ -116,6 +116,7 @@ private fun MainScreenList(
                 onDueDateChange = viewModel::setCaptureDueDate,
                 onDueTimeChange = viewModel::setCaptureDueTime,
                 onCostChange = viewModel::setCaptureCost,
+                onAlarmModeChange = viewModel::setCaptureAlarmMode,
                 onSave = viewModel::saveCapture
             )
         }

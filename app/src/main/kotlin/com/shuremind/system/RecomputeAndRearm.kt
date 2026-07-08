@@ -99,7 +99,8 @@ class RecomputeAndRearm(
 
         val globalNext = FireInstantEngine.globalNext(inputs, zone, now, fireSettings)
         if (globalNext != null) {
-            alarmArmer.arm(globalNext.first.toInstant().toEpochMilli(), settings.exactAlarmsOptIn)
+            val isAlarm = globalNext.second.any { it.isAlarm }
+            alarmArmer.arm(globalNext.first.toInstant().toEpochMilli(), settings.exactAlarmsOptIn, isAlarm)
         } else {
             alarmArmer.cancel()
         }

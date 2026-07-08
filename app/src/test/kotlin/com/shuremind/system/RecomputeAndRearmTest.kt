@@ -106,7 +106,8 @@ class RecomputeAndRearmTest {
         reminderRuleRepository: FakeReminderRuleRepository = FakeReminderRuleRepository(),
         watermarkRepository: FakeDeliveryWatermarkRepository = FakeDeliveryWatermarkRepository(),
         alarmArmer: FakeAlarmArmer = FakeAlarmArmer(),
-        notifier: FakeOverdueSummaryNotifier = FakeOverdueSummaryNotifier()
+        notifier: FakeOverdueSummaryNotifier = FakeOverdueSummaryNotifier(),
+        nowProvider: () -> ZonedDateTime = { ZonedDateTime.now(zone) }
     ) = RecomputeAndRearm(
         taskRepository = taskRepository,
         completionRepository = completionRepository,
@@ -115,7 +116,8 @@ class RecomputeAndRearmTest {
         deliveryWatermarkRepository = watermarkRepository,
         alarmArmer = alarmArmer,
         overdueSummaryNotifier = notifier,
-        zone = zone
+        zone = zone,
+        nowProvider = nowProvider
     )
 
     @Test
@@ -224,7 +226,10 @@ class RecomputeAndRearmTest {
             )
         val taskRepository = GatedTaskRepository(listOf(farTask))
         val armer = FakeAlarmArmer()
-        val recomputeAndRearm = useCase(taskRepository, alarmArmer = armer)
+        // The rerun loop re-reads its own nowProvider for each pass (real wall-clock in production,
+        // so a rerun reflects genuinely current time) — pin it to testNow here so the assertion below
+        // doesn't depend on the real date the test happens to run on (this is what made the test flaky).
+        val recomputeAndRearm = useCase(taskRepository, alarmArmer = armer, nowProvider = { testNow })
 
         // Start a pass; it reads (and gates on) the task list before the "concurrent" write below.
         val firstPass = launch { recomputeAndRearm.run(testNow) }

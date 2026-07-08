@@ -44,7 +44,8 @@ class RecomputeAndRearm(
     private val deliveryWatermarkRepository: DeliveryWatermarkRepository,
     private val alarmArmer: AlarmArmer,
     private val overdueSummaryNotifier: OverdueSummaryNotifier,
-    private val zone: ZoneId = ZoneId.systemDefault()
+    private val zone: ZoneId = ZoneId.systemDefault(),
+    private val nowProvider: () -> ZonedDateTime = { ZonedDateTime.now(zone) }
 ) {
     // run() itself writes to taskRepository/completionRepository (recompute/auto-skip), and those
     // repositories call back into run() via ScheduleChangeNotifier — without a guard that would
@@ -68,7 +69,7 @@ class RecomputeAndRearm(
             do {
                 rerunRequested.set(false)
                 runLocked(passNow)
-                passNow = ZonedDateTime.now(zone)
+                passNow = nowProvider()
             } while (rerunRequested.get())
         } finally {
             runLock.unlock()

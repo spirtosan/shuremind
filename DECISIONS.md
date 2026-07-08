@@ -119,3 +119,16 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
   (task_tags.tag_id already has onDelete=CASCADE from M1, kept as
   defense-in-depth) — so the cascade is exercisable by a plain JVM unit
   test against fake DAOs. (2026-07-09)
+- **D-42** Per-task alarm mode (opt-in, default off): new Task.alarm_mode
+  column (Room v3, first real migration — additive, DEFAULT 0). When on,
+  the task's occurrence-time fire rings as a true alarm: armed via
+  setAlarmClock() (always exact, no opt-in needed, shows status-bar alarm
+  icon), delivered on a dedicated alarm channel (USAGE_ALARM attributes,
+  insistent looping system alarm sound) with a full-screen intent to a
+  minimal ring screen (task title + Done/Snooze/Dismiss), auto-silenced
+  after 5 minutes leaving the notification up. Alarm-mode fires ignore
+  quiet hours; lead-time reminders on the same task remain normal
+  notifications; escalation curve unchanged; D-07 single-next-alarm
+  pattern kept — the arming call branches to setAlarmClock whenever the
+  globally nearest instant belongs to an alarm-mode occurrence. Toggle
+  available on all types except SOMEDAY. (2026-07-09)

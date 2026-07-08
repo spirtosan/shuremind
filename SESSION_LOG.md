@@ -7,10 +7,9 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: v1 installed on both phones → M6 UX pass (part 1 + part 1.5 done, part 2 = translation review pending).
-- Next concrete step: translation review table + a week of real-life use + per-task alarm mode (M7).
+- Phase: v1 installed on both phones → M6 UX pass (part 1 + part 1.5 done, part 2 = translation review pending) → M7 (per-task alarm mode) implemented, on-device verification pending.
+- Next concrete step: on-device alarm-mode verification (checklist in Session 10) + translation review table + a week of real-life use.
 - Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
-- Watch item from M6 part 1.5: RecomputeAndRearmTest's concurrency test ("a write arriving while a pass is in flight triggers a rerun that picks it up") fails on a clean checkout of master, unrelated to any pending change set — likely another unpinned-clock issue like Session 5's DST fixtures. Investigate this session if time allows; must not be masked by M7 changes (M7 touches the same scheduling/recompute path).
 - Open questions: real launcher icon design (placeholder monogram ships in v1, → D-35). Wife's phone confirmed Android 10 (M6 smoke test).
 
 ## Session 1 — 2026-07-04 (Fable, planning)
@@ -201,3 +200,52 @@ _Project memory across chat sessions._
   manual pass on the tag-management dialog and keyboard scroll behavior
   before the next real-life week.
 - Next: translation review table (M6 part 2) + a week of real-life use.
+
+## Session 10 — 2026-07-09 (Claude Code, M7)
+- Resolved Session 9's watch item: RecomputeAndRearmTest's concurrency
+  test read the real wall clock directly (ZonedDateTime.now(zone)) in its
+  rerun loop instead of through a seam, so a rerun triggered mid-test used
+  the actual current date instead of the test's fixed instant — an
+  unpinned-clock bug in the same family as Session 5's DST fixtures,
+  exactly as suspected. Fixed by adding an injectable nowProvider
+  (matching every other clock seam in the codebase); production behavior
+  unchanged (still reads the real clock by default). Landed as its own
+  commit before M7 started, confirmed stable across repeated runs.
+- Implemented M7 (per-task alarm mode, D-42): Task.alarm_mode (Room v2→3,
+  additive migration — first real, non-destructive migration, both phones
+  carry live data now); FireInstantEngine exposes which fire is an alarm
+  (isAlarm, occurrence-reason only) and exempts it from quiet-hours
+  deferral; AlarmScheduler branches to setAlarmClock() for that case; a
+  new alarm notification channel (USAGE_ALARM, insistent) posts through a
+  full-screen intent to a new minimal AlarmRingActivity (Done/Snooze/
+  Dismiss, all three routing through the existing NotificationActionReceiver
+  so watermark/completion logic has one code path); a sibling one-shot
+  AlarmManager timer auto-silences the ring after 5 minutes without
+  removing the notification. "Ring as alarm" toggle added to task edit and
+  quick capture (hidden for SOMEDAY).
+- Export/import: TaskDto.alarm_mode defaults to false so pre-M7 backup
+  files (missing the key) import cleanly; schema_version stays 1
+  (additive field). No instrumentation available in this environment for
+  Room's MigrationTestHelper, so the migration is instead verified by a
+  JVM test asserting the exported schema JSON is strictly additive (v2's
+  tasks columns all survive into v3, exactly one new column, every other
+  table unchanged) — real migration of each phone's live v2 database is an
+  on-device checklist item, not something this session could exercise.
+- Result: 199 tests green (187 + 12 new: alarm-arming branch selection,
+  alarm-mode quiet-hours exemption + DST composition + mixed-queue arming,
+  additive-schema assertions, export/import backward tolerance, toggle
+  load/save), assembleDebug + assembleRelease + lint clean bar the known
+  local.properties issue and two new, expected UnusedAttribute warnings
+  (AlarmRingActivity's showWhenLocked/turnScreenOn manifest attributes
+  only apply API 27+; minSdk is 26, and the code already has an explicit
+  window-flag fallback for API 26 itself — same shape as the existing
+  localeConfig warning already accepted for M6). Nothing exercised on a
+  real device this session (none available) — see the on-device
+  checklist below.
+- On-device checklist (alarm feature): locked-screen ring; ring during
+  quiet hours; Done/Snooze/Dismiss from the ring screen (note: Snooze
+  re-fires as a normal notification, not another ring — confirm this
+  matches expectations); 5-minute auto-silence; migration of the real v2
+  DB on both phones; import of a pre-M7 backup file.
+- Next: on-device alarm-mode verification (checklist above) + translation
+  review table (M6 part 2) + a week of real-life use.

@@ -7,9 +7,10 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: v1 installed on both phones → M6 UX pass (part 1 done, part 2 = translation review pending).
-- Next concrete step: translation review table + a week of real-life use.
+- Phase: v1 installed on both phones → M6 UX pass (part 1 + part 1.5 done, part 2 = translation review pending).
+- Next concrete step: translation review table + a week of real-life use + per-task alarm mode (M7).
 - Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
+- Watch item from M6 part 1.5: RecomputeAndRearmTest's concurrency test ("a write arriving while a pass is in flight triggers a rerun that picks it up") fails on a clean checkout of master, unrelated to any pending change set — likely another unpinned-clock issue like Session 5's DST fixtures. Investigate this session if time allows; must not be masked by M7 changes (M7 touches the same scheduling/recompute path).
 - Open questions: real launcher icon design (placeholder monogram ships in v1, → D-35). Wife's phone confirmed Android 10 (M6 smoke test).
 
 ## Session 1 — 2026-07-04 (Fable, planning)
@@ -155,3 +156,48 @@ _Project memory across chat sessions._
   before the next real-life week, especially the offset picker and the
   dark-theme priority chip colors.
 - Next: translation review table (part 2) + a week of real-life use.
+
+## Session 9 — 2026-07-09 (Claude Code, M6 part 1.5)
+- On-device use after M6 part 1 surfaced four more gaps: quick capture had
+  no Notes field; quick capture's tag picker was free-text-only (no toggle
+  chips like task edit, D-39); no way to delete a stale/mistyped tag
+  anywhere in the app; and both task edit and quick-capture forms couldn't
+  scroll far enough to reach fields under the keyboard. Also, the language
+  picker showed each language's name translated into the *current* UI
+  language (e.g. Russian UI showed "Английский" for English) instead of
+  each option naming itself.
+- Notes field: added directly under the title in the quick-capture
+  expanded panel, mapped to Task.notes (already schema-present); localized
+  hint in en/bg/ru.
+- Tag toggle chips: quick capture now shows existing tags as FilterChip
+  toggles (same D-39 pattern as task edit) alongside the free-text
+  new-tag field; only genuinely new tags show as removable InputChips.
+- Tag management (D-41): a "Tags" row in Settings opens a dialog listing
+  every tag with a per-tag delete button; delete shows a confirmation
+  naming the tag, then removes the tag and its TaskTag rows via an
+  explicit transaction (TagRepository.deleteTag), covered by a
+  repository-level unit test. No rename in v1.
+- Keyboard scroll bug: MainActivity already ran
+  decorFitsSystemWindows(false) via enableEdgeToEdge(), so the fix was
+  entirely in Compose — task detail's scrollable Column gained
+  .imePadding()/.imeNestedScroll(); the quick-capture panel had no
+  scrollable container at all (it sat above a separate LazyColumn), so the
+  main screen's capture bar, tag filter, priority legend and task list
+  were merged into one LazyColumn with .imePadding()/.imeNestedScroll(),
+  so the whole screen scrolls as one unit past the keyboard.
+- Language endonyms: AppLanguage now carries a hardcoded endonym per
+  non-system language (English/Български/Русский); the picker shows that
+  instead of the old lang_en/lang_bg/lang_ru string resources (removed),
+  which always matched the current UI language rather than naming each
+  option in itself. The system-default option is unaffected (still the
+  localized "System default" string).
+- Result: 187 tests green (183 + 4 new: notes trim/blank-to-null,
+  tag-toggle add/remove, tag-delete cascade, Settings tag-delete),
+  assembleDebug clean, lint clean bar the known local.properties issue and
+  one pre-existing unrelated failure (RecomputeAndRearmTest's concurrency
+  test — confirmed failing identically on a clean checkout of master via a
+  throwaway worktree, unrelated to this change set). UI changes not
+  exercised on a real device this session (none available); recommend a
+  manual pass on the tag-management dialog and keyboard scroll behavior
+  before the next real-life week.
+- Next: translation review table (M6 part 2) + a week of real-life use.

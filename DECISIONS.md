@@ -111,3 +111,11 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
   type picker gets one dialog listing all 8 types; no in-app help section;
   help texts are string resources included in the translation review.
   (2026-07-06)
+- **D-41** Tag management (Settings): a "Tags" row opens a dialog listing
+  every tag with a per-tag delete action (no rename in v1); deleting shows
+  a localized confirmation naming the tag, then removes the Tag row and
+  every TaskTag row referencing it via an explicit transaction in
+  TagRepository.deleteTag — not solely reliant on the DB's FK cascade
+  (task_tags.tag_id already has onDelete=CASCADE from M1, kept as
+  defense-in-depth) — so the cascade is exercisable by a plain JVM unit
+  test against fake DAOs. (2026-07-09)

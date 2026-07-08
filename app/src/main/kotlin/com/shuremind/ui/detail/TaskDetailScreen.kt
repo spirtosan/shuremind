@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imeNestedScroll
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -105,7 +107,9 @@ fun TaskDetailScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .imeNestedScroll()
                 .verticalScroll(rememberScrollState())
+                .imePadding()
                 .padding(16.dp)
         ) {
             SectionTitle(R.string.detail_section_common)

@@ -14,6 +14,7 @@
     <string name="capture_type_label">Тип</string>
     <string name="capture_impact_label">Значимост</string>
     <string name="capture_urgency_label">Спешност</string>
+    <string name="capture_notes_hint">Бележки (незадължително)</string>
     <string name="capture_tags_label">Етикети</string>
     <string name="capture_tag_input_hint">Име на етикет</string>
     <string name="capture_add_tag">Добави етикет</string>
@@ -166,9 +167,6 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_section_language">Език</string>
     <string name="lang_system">По подразбиране на системата</string>
-    <string name="lang_en">Английски</string>
-    <string name="lang_bg">Български</string>
-    <string name="lang_ru">Руски</string>
     <string name="settings_section_quiet_hours">Тихи часове</string>
     <string name="settings_quiet_hours_start_value">Начало: %1$s</string>
     <string name="settings_quiet_hours_end_value">Край: %1$s</string>
@@ -178,6 +176,19 @@
     <string name="settings_section_snooze">Отлагания</string>
     <string name="settings_add_snooze_preset">Добави отлагане (минути)</string>
     <string name="settings_section_reminder_offsets">Напомняния по подразбиране</string>
+
+    <!-- M6 part 1.5: tag management (D-41) -->
+    <string name="settings_section_tags">Етикети</string>
+    <string name="settings_tags_empty">Все още няма етикети</string>
+    <string name="settings_tags_delete_tag">Изтрий етикет</string>
+    <string name="settings_tags_delete_confirm_title">Да изтрия ли #%1$s?</string>
+    <string name="settings_tags_delete_confirm_message">Това ще премахне етикета от всички задачи. Действието е необратимо.</string>
+    <string name="settings_tags_close">Затвори</string>
+    <plurals name="settings_tags_count">
+        <item quantity="one">%d етикет</item>
+        <item quantity="other">%d етикета</item>
+    </plurals>
+
     <string name="settings_section_backup">Резервно копие</string>
     <string name="settings_auto_backup">Автоматично резервно копие</string>
     <string name="settings_auto_backup_subtitle">Дневно резервно копие в избраната от вас папка, пази последните 7</string>

@@ -52,7 +52,9 @@ import java.time.LocalTime
 @Composable
 fun CaptureBar(
     state: QuickCaptureState,
+    allTags: List<String>,
     onTitleChange: (String) -> Unit,
+    onNotesChange: (String) -> Unit,
     onExpandToggle: () -> Unit,
     onTypeChange: (TaskType) -> Unit,
     onImpactChange: (Int) -> Unit,
@@ -60,6 +62,7 @@ fun CaptureBar(
     onTagInputChange: (String) -> Unit,
     onAddTag: () -> Unit,
     onRemoveTag: (String) -> Unit,
+    onToggleTag: (String) -> Unit,
     onDueDateChange: (String?) -> Unit,
     onDueTimeChange: (String?) -> Unit,
     onCostChange: (String) -> Unit,
@@ -98,7 +101,13 @@ fun CaptureBar(
 
             if (state.expanded) {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = state.notes,
+                        onValueChange = onNotesChange,
+                        placeholder = { Text(stringResource(R.string.capture_notes_hint)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
                         Text(stringResource(R.string.capture_type_label))
                         TypeHelpDot()
                     }
@@ -127,7 +136,21 @@ fun CaptureBar(
                         Text(stringResource(R.string.capture_tags_label))
                         HelpDotWithDialog(R.string.help_tags)
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // D-39 tag picker: existing tags are tappable toggles so the user never retypes one.
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        allTags.forEach { tag ->
+                            FilterChip(
+                                selected = tag in state.tags,
+                                onClick = { onToggleTag(tag) },
+                                label = { Text(tag) }
+                            )
+                        }
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
                         OutlinedTextField(
                             value = state.tagInput,
                             onValueChange = onTagInputChange,
@@ -139,20 +162,23 @@ fun CaptureBar(
                             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.capture_add_tag))
                         }
                     }
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        state.tags.forEach { tag ->
-                            InputChip(
-                                selected = false,
-                                onClick = { onRemoveTag(tag) },
-                                label = { Text(tag) },
-                                trailingIcon = {
-                                    Icon(
-                                        Icons.Filled.Close,
-                                        contentDescription = stringResource(R.string.capture_remove_tag),
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            )
+                    val freshTags = state.tags - allTags.toSet()
+                    if (freshTags.isNotEmpty()) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                            freshTags.forEach { tag ->
+                                InputChip(
+                                    selected = false,
+                                    onClick = { onRemoveTag(tag) },
+                                    label = { Text(tag) },
+                                    trailingIcon = {
+                                        Icon(
+                                            Icons.Filled.Close,
+                                            contentDescription = stringResource(R.string.capture_remove_tag),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
 

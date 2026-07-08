@@ -104,6 +104,10 @@ class FakeTagDao(initial: List<TagEntity> = emptyList()) : TagDao {
 
     override suspend fun getByName(name: String): TagEntity? = state.value.find { it.name == name }
 
+    override suspend fun deleteById(id: String) {
+        state.update { list -> list.filterNot { it.id == id } }
+    }
+
     override suspend fun deleteAll() {
         state.value = emptyList()
     }
@@ -127,6 +131,10 @@ class FakeTaskTagDao(initial: List<TaskTagEntity> = emptyList()) : TaskTagDao {
     override suspend fun getTagIdsForTask(taskId: String): List<String> = state.value.filter { it.taskId == taskId }.map { it.tagId }
 
     override suspend fun getTaskIdsForTag(tagId: String): List<String> = state.value.filter { it.tagId == tagId }.map { it.taskId }
+
+    override suspend fun deleteForTag(tagId: String) {
+        state.update { list -> list.filterNot { it.tagId == tagId } }
+    }
 
     override fun observeAll(): Flow<List<TaskTagEntity>> = state
 

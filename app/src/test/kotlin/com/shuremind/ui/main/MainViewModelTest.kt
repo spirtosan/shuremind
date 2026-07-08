@@ -160,6 +160,41 @@ class MainViewModelTest {
         assertEquals("", vm.capture.value.title)
     }
 
+    // --- M6 part 1.5: quick-capture notes + tag toggle chips ---
+
+    @Test
+    fun `capture notes are saved trimmed, blank notes are stored as null`() = runTest(dispatcher) {
+        val taskRepository = FakeTaskRepository()
+        val vm = viewModel(taskRepository = taskRepository)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.setCaptureTitle("Buy eggs")
+        vm.setCaptureNotes("  get the free-range ones  ")
+        vm.saveCapture()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("get the free-range ones", taskRepository.tasks.single().notes)
+
+        vm.setCaptureTitle("Another task")
+        vm.setCaptureNotes("   ")
+        vm.saveCapture()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertNull(taskRepository.tasks.single { it.title == "Another task" }.notes)
+    }
+
+    @Test
+    fun `toggling an existing tag chip adds it, toggling again removes it`() = runTest(dispatcher) {
+        val vm = viewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.toggleCaptureTag("shop")
+        assertEquals(listOf("shop"), vm.capture.value.tags)
+
+        vm.toggleCaptureTag("shop")
+        assertTrue(vm.capture.value.tags.isEmpty())
+    }
+
     @Test
     fun `snooze only writes snoozed_until on the task repository`() = runTest(dispatcher) {
         val task = fixtureTask("water-flowers", nextFireAt = now)

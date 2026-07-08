@@ -86,6 +86,7 @@ fun SettingsScreen(
     val state by viewModel.uiState.collectAsState()
     val pendingImport by viewModel.pendingImport.collectAsState()
     val feedback by viewModel.feedback.collectAsState()
+    val tags by viewModel.tags.collectAsState()
     val locale = currentLocale()
     val context = LocalContext.current
     val statuses = rememberPermissionStatuses()
@@ -95,6 +96,7 @@ fun SettingsScreen(
     var editingTime by remember { mutableStateOf<TimeField?>(null) }
     var snoozeInput by remember { mutableStateOf("") }
     var defaultSnoozeInput by remember { mutableStateOf("") }
+    var showTagManagement by remember { mutableStateOf(false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
@@ -148,17 +150,13 @@ fun SettingsScreen(
         ) {
             SettingsSectionTitle(R.string.settings_section_language)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val languages = listOf(
-                    AppLanguage.SYSTEM to R.string.lang_system,
-                    AppLanguage.ENGLISH to R.string.lang_en,
-                    AppLanguage.BULGARIAN to R.string.lang_bg,
-                    AppLanguage.RUSSIAN to R.string.lang_ru
-                )
-                languages.forEach { (language, labelRes) ->
+                AppLanguage.entries.forEach { language ->
                     FilterChip(
                         selected = state.language == language,
                         onClick = { viewModel.setLanguage(language) },
-                        label = { Text(stringResource(labelRes)) }
+                        // M6 part 1.5: each language names itself (hardcoded endonym), only the
+                        // system-default option is localized.
+                        label = { Text(language.endonym ?: stringResource(R.string.lang_system)) }
                     )
                 }
             }
@@ -232,6 +230,15 @@ fun SettingsScreen(
                     type = type,
                     offsets = state.defaultReminderOffsets[type].orEmpty(),
                     onChange = { viewModel.setDefaultReminderOffsets(type, it) }
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            SettingsSectionTitle(R.string.settings_section_tags)
+            TextButton(onClick = { showTagManagement = true }) {
+                Text(
+                    if (tags.isEmpty()) stringResource(R.string.settings_tags_empty)
+                    else pluralStringResource(R.plurals.settings_tags_count, tags.size, tags.size)
                 )
             }
 
@@ -423,9 +430,77 @@ fun SettingsScreen(
             }
         )
     }
+
+    if (showTagManagement) {
+        TagManagementDialog(
+            tags = tags,
+            onDelete = viewModel::deleteTag,
+            onDismiss = { showTagManagement = false }
+        )
+    }
 }
 
 private enum class TimeField { QUIET_START, QUIET_END, DEFAULT_ALL_DAY }
+
+/** M6 part 1.5 (D-41): lists every tag with a per-tag delete action; no rename in v1. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TagManagementDialog(
+    tags: List<com.shuremind.data.entity.TagEntity>,
+    onDelete: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var pendingDelete by remember { mutableStateOf<com.shuremind.data.entity.TagEntity?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings_section_tags)) },
+        text = {
+            if (tags.isEmpty()) {
+                Text(stringResource(R.string.settings_tags_empty))
+            } else {
+                Column {
+                    tags.forEach { tag ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Text("#${tag.name}", modifier = Modifier.weight(1f))
+                            IconButton(onClick = { pendingDelete = tag }) {
+                                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.settings_tags_delete_tag))
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.settings_tags_close))
+            }
+        }
+    )
+
+    pendingDelete?.let { tag ->
+        AlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text(stringResource(R.string.settings_tags_delete_confirm_title, tag.name)) },
+            text = { Text(stringResource(R.string.settings_tags_delete_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = { onDelete(tag.id); pendingDelete = null }) {
+                    Text(stringResource(R.string.detail_delete_confirm_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) {
+                    Text(stringResource(R.string.detail_delete_confirm_cancel))
+                }
+            }
+        )
+    }
+}
 
 @Composable
 private fun SettingsSectionTitle(res: Int, helpRes: Int? = null) {

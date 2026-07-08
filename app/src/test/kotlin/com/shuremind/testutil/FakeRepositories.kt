@@ -154,6 +154,11 @@ class FakeTagRepository : TagRepository {
         taskTagIds.update { it + (taskId to tagIds.toList()) }
     }
 
+    override suspend fun deleteTag(tagId: String) {
+        tags.update { list -> list.filterNot { it.id == tagId } }
+        taskTagIds.update { map -> map.mapValues { (_, ids) -> ids.filterNot { it == tagId } } }
+    }
+
     /** Test seam: pre-assign tags without going through getOrCreate. */
     fun seedTag(tag: TagEntity, taskIds: List<String> = emptyList()) {
         tags.update { it + tag }

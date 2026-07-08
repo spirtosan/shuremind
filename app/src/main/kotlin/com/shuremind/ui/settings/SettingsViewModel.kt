@@ -13,8 +13,10 @@ import com.shuremind.data.repo.AppLanguage
 import com.shuremind.data.repo.BackupFileNaming
 import com.shuremind.data.repo.BackupFileWriter
 import com.shuremind.data.repo.BackupSettingsRepository
+import com.shuremind.data.entity.TagEntity
 import com.shuremind.data.repo.LanguageRepository
 import com.shuremind.data.repo.SettingsRepository
+import com.shuremind.data.repo.TagRepository
 import com.shuremind.engine.TaskType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -71,6 +73,7 @@ class SettingsViewModel(
     private val backupFileWriter: BackupFileWriter,
     private val backupRepository: BackupRepository,
     private val importRepository: ImportRepository,
+    private val tagRepository: TagRepository,
     private val appVersion: String
 ) : ViewModel() {
 
@@ -95,6 +98,14 @@ class SettingsViewModel(
             backupFolderUri = backupSettings.folderUri
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, SettingsUiState())
+
+    /** M6 part 1.5 (D-41): backs the Settings "Tags" management dialog. */
+    val tags: StateFlow<List<TagEntity>> = tagRepository.observeAll()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    fun deleteTag(tagId: String) = viewModelScope.launch {
+        tagRepository.deleteTag(tagId)
+    }
 
     private val _feedback = MutableStateFlow<SettingsFeedback?>(null)
     val feedback: StateFlow<SettingsFeedback?> = _feedback

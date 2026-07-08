@@ -19,4 +19,7 @@ interface TagRepository {
     suspend fun getTagsForTask(taskId: String): List<TagEntity>
 
     suspend fun setTagsForTask(taskId: String, tagIds: Set<String>)
+
+    /** M6 part 1.5 (D-41): removes the tag and every TaskTag row referencing it, in one transaction. No rename in v1. */
+    suspend fun deleteTag(tagId: String)
 }

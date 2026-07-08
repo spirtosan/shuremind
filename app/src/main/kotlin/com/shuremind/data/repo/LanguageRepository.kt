@@ -3,12 +3,16 @@ package com.shuremind.data.repo
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 
-/** D-18: app_language setting (system|en|bg|ru, default system). */
-enum class AppLanguage(val tag: String?) {
-    SYSTEM(null),
-    ENGLISH("en"),
-    BULGARIAN("bg"),
-    RUSSIAN("ru")
+/**
+ * D-18: app_language setting (system|en|bg|ru, default system). [endonym] is null for SYSTEM
+ * (that option shows the localized "System default" string instead); the other three are hardcoded
+ * so each language always names itself regardless of the current UI language (M6 part 1.5).
+ */
+enum class AppLanguage(val tag: String?, val endonym: String?) {
+    SYSTEM(null, null),
+    ENGLISH("en", "English"),
+    BULGARIAN("bg", "Български"),
+    RUSSIAN("ru", "Русский")
 }
 
 /**

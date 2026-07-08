@@ -138,6 +138,7 @@ class MainViewModel(
     // --- Quick capture (task 3) ---
 
     fun setCaptureTitle(title: String) = updateCapture { it.copy(title = title) }
+    fun setCaptureNotes(notes: String) = updateCapture { it.copy(notes = notes) }
     fun setCaptureExpanded(expanded: Boolean) = updateCapture { it.copy(expanded = expanded) }
     fun setCaptureType(type: TaskType) = updateCapture { it.copy(type = type) }
     fun setCaptureImpact(impact: Int) = updateCapture { it.copy(impact = impact) }
@@ -155,6 +156,9 @@ class MainViewModel(
 
     fun removeCaptureTag(name: String) = updateCapture { it.copy(tags = it.tags - name) }
 
+    /** D-39 tag picker (M6 part 1.5): toggling an existing tag chip on/off the in-progress capture. */
+    fun toggleCaptureTag(name: String) = updateCapture { it.copy(tags = if (name in it.tags) it.tags - name else it.tags + name) }
+
     private fun updateCapture(block: (QuickCaptureState) -> QuickCaptureState) {
         _capture.value = block(_capture.value)
     }
@@ -169,7 +173,7 @@ class MainViewModel(
             var entity = TaskEntity(
                 id = id,
                 title = state.title.trim(),
-                notes = null,
+                notes = state.notes.trim().ifBlank { null },
                 type = state.type,
                 status = TaskStatus.ACTIVE,
                 impact = state.impact,

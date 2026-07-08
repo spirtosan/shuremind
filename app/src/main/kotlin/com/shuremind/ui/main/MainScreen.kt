@@ -2,9 +2,13 @@ package com.shuremind.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imeNestedScroll
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -29,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.shuremind.R
-import com.shuremind.data.entity.TaskEntity
 import com.shuremind.ui.common.HelpDotWithDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,45 +65,101 @@ fun MainScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            Column {
-                CaptureBar(
-                    state = capture,
-                    onTitleChange = viewModel::setCaptureTitle,
-                    onExpandToggle = { viewModel.setCaptureExpanded(!capture.expanded) },
-                    onTypeChange = viewModel::setCaptureType,
-                    onImpactChange = viewModel::setCaptureImpact,
-                    onUrgencyChange = viewModel::setCaptureUrgency,
-                    onTagInputChange = viewModel::setCaptureTagInput,
-                    onAddTag = viewModel::addCaptureTag,
-                    onRemoveTag = viewModel::removeCaptureTag,
-                    onDueDateChange = viewModel::setCaptureDueDate,
-                    onDueTimeChange = viewModel::setCaptureDueTime,
-                    onCostChange = viewModel::setCaptureCost,
-                    onSave = viewModel::saveCapture
-                )
+        // M6 part 1.5: the capture panel, tag filter and legend are items in the same LazyColumn as
+        // the task list (rather than siblings above a separate LazyColumn) so the whole screen
+        // scrolls as one unit — otherwise the expanded capture panel had no way to scroll into view
+        // past the IME, since it lived outside any scrollable container. imePadding() reserves room
+        // for the keyboard at the bottom of that shared scroll.
+        MainScreenList(
+            uiState = uiState,
+            capture = capture,
+            viewModel = viewModel,
+            onOpenTask = onOpenTask,
+            modifier = Modifier
+                .padding(innerPadding)
+                .imePadding()
+        )
+    }
+}
 
-                TagFilterRow(
-                    allTags = uiState.allTags,
-                    selectedTagId = uiState.selectedTagId,
-                    onSelectTag = viewModel::selectTag
-                )
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MainScreenList(
+    uiState: MainUiState,
+    capture: QuickCaptureState,
+    viewModel: MainViewModel,
+    onOpenTask: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val sections = listOf(
+        R.string.section_overdue to uiState.overdue,
+        R.string.section_today to uiState.today,
+        R.string.section_upcoming to uiState.upcoming,
+        R.string.section_someday to uiState.someday
+    ).filter { it.second.isNotEmpty() }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    Text(stringResource(R.string.list_priority_legend_label), style = MaterialTheme.typography.bodySmall)
-                    HelpDotWithDialog(R.string.help_priority_chip)
+    LazyColumn(modifier = modifier.fillMaxSize().imeNestedScroll()) {
+        item {
+            CaptureBar(
+                state = capture,
+                allTags = uiState.allTags.map { it.name },
+                onTitleChange = viewModel::setCaptureTitle,
+                onNotesChange = viewModel::setCaptureNotes,
+                onExpandToggle = { viewModel.setCaptureExpanded(!capture.expanded) },
+                onTypeChange = viewModel::setCaptureType,
+                onImpactChange = viewModel::setCaptureImpact,
+                onUrgencyChange = viewModel::setCaptureUrgency,
+                onTagInputChange = viewModel::setCaptureTagInput,
+                onAddTag = viewModel::addCaptureTag,
+                onRemoveTag = viewModel::removeCaptureTag,
+                onToggleTag = viewModel::toggleCaptureTag,
+                onDueDateChange = viewModel::setCaptureDueDate,
+                onDueTimeChange = viewModel::setCaptureDueTime,
+                onCostChange = viewModel::setCaptureCost,
+                onSave = viewModel::saveCapture
+            )
+        }
+        item {
+            TagFilterRow(
+                allTags = uiState.allTags,
+                selectedTagId = uiState.selectedTagId,
+                onSelectTag = viewModel::selectTag
+            )
+        }
+        item {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
+                Text(stringResource(R.string.list_priority_legend_label), style = MaterialTheme.typography.bodySmall)
+                HelpDotWithDialog(R.string.help_priority_chip)
+            }
+        }
+        if (sections.isEmpty()) {
+            item {
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), contentAlignment = Alignment.Center) {
+                    Text(stringResource(R.string.list_empty))
                 }
-
-                TaskSectionsList(
-                    uiState = uiState,
-                    onOpenTask = onOpenTask,
-                    onDone = { viewModel.onDone(it) },
-                    onSkip = { viewModel.onSkip(it) },
-                    onSnooze = { task, minutes -> viewModel.onSnooze(task, minutes) }
-                )
+            }
+        } else {
+            sections.forEach { (headerRes, items) ->
+                item {
+                    Text(
+                        text = stringResource(headerRes),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+                items(items, key = { it.task.id }) { item ->
+                    TaskItemRow(
+                        item = item,
+                        snoozePresetsMinutes = uiState.snoozePresetsMinutes,
+                        onClick = { onOpenTask(item.task.id) },
+                        onDone = { viewModel.onDone(item.task) },
+                        onSkip = { viewModel.onSkip(item.task) },
+                        onSnooze = { minutes -> viewModel.onSnooze(item.task, minutes) }
+                    )
+                }
             }
         }
     }
@@ -114,7 +173,7 @@ private fun TagFilterRow(
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     ) {
         item {
             FilterChip(
@@ -129,51 +188,6 @@ private fun TagFilterRow(
                 onClick = { onSelectTag(if (selectedTagId == tag.id) null else tag.id) },
                 label = { Text("#${tag.name}") }
             )
-        }
-    }
-}
-
-@Composable
-private fun TaskSectionsList(
-    uiState: MainUiState,
-    onOpenTask: (String) -> Unit,
-    onDone: (TaskEntity) -> Unit,
-    onSkip: (TaskEntity) -> Unit,
-    onSnooze: (TaskEntity, Long) -> Unit
-) {
-    val sections = listOf(
-        R.string.section_overdue to uiState.overdue,
-        R.string.section_today to uiState.today,
-        R.string.section_upcoming to uiState.upcoming,
-        R.string.section_someday to uiState.someday
-    ).filter { it.second.isNotEmpty() }
-
-    if (sections.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.list_empty))
-        }
-        return
-    }
-
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        sections.forEach { (headerRes, items) ->
-            item {
-                Text(
-                    text = stringResource(headerRes),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-            items(items, key = { it.task.id }) { item ->
-                TaskItemRow(
-                    item = item,
-                    snoozePresetsMinutes = uiState.snoozePresetsMinutes,
-                    onClick = { onOpenTask(item.task.id) },
-                    onDone = { onDone(item.task) },
-                    onSkip = { onSkip(item.task) },
-                    onSnooze = { minutes -> onSnooze(item.task, minutes) }
-                )
-            }
         }
     }
 }

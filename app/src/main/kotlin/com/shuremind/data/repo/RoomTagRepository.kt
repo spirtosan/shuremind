@@ -11,7 +11,8 @@ import java.util.UUID
 
 internal class RoomTagRepository(
     private val tagDao: TagDao,
-    private val taskTagDao: TaskTagDao
+    private val taskTagDao: TaskTagDao,
+    private val transactionRunner: TransactionRunner
 ) : TagRepository {
 
     override fun observeAll(): Flow<List<TagEntity>> = tagDao.observeAll()
@@ -43,5 +44,13 @@ internal class RoomTagRepository(
         val current = taskTagDao.getTagIdsForTask(taskId).toSet()
         (tagIds - current).forEach { taskTagDao.upsert(TaskTagEntity(taskId, it)) }
         (current - tagIds).forEach { taskTagDao.delete(TaskTagEntity(taskId, it)) }
+    }
+
+    /** D-41: explicit transaction rather than relying solely on the DB's FK cascade, so this is exercised by plain JVM unit tests against fake DAOs (Room's FK enforcement isn't simulated by the fakes). */
+    override suspend fun deleteTag(tagId: String) {
+        transactionRunner.runInTransaction {
+            taskTagDao.deleteForTag(tagId)
+            tagDao.deleteById(tagId)
+        }
     }
 }

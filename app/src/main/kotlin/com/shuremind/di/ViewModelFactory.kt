@@ -38,6 +38,7 @@ class ViewModelFactory(private val container: AppContainer) : ViewModelProvider.
                 backupFileWriter = container.backupFileWriter,
                 backupRepository = container.backupRepository,
                 importRepository = container.importRepository,
+                tagRepository = container.tagRepository,
                 appVersion = com.shuremind.BuildConfig.VERSION_NAME
             ) as T
 

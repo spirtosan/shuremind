@@ -25,6 +25,7 @@ data class MainUiState(
 /** Quick-capture bar state (task 3, M2): plain capture is title + Save, everything else optional. */
 data class QuickCaptureState(
     val title: String = "",
+    val notes: String = "",
     val expanded: Boolean = false,
     val type: TaskType = TaskType.EVENT,
     val impact: Int = 1,

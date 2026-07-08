@@ -26,6 +26,10 @@ internal interface TaskTagDao {
     @Query("SELECT task_id FROM task_tags WHERE tag_id = :tagId")
     suspend fun getTaskIdsForTag(tagId: String): List<String>
 
+    /** M6 part 1.5 (D-41): removes every cross-ref for a deleted tag; called in the same transaction as TagDao.deleteById. */
+    @Query("DELETE FROM task_tags WHERE tag_id = :tagId")
+    suspend fun deleteForTag(tagId: String)
+
     @Query("SELECT * FROM task_tags")
     fun observeAll(): Flow<List<TaskTagEntity>>
 

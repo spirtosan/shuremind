@@ -13,6 +13,7 @@
     <string name="capture_type_label">Type</string>
     <string name="capture_impact_label">Impact</string>
     <string name="capture_urgency_label">Urgency</string>
+    <string name="capture_notes_hint">Notes (optional)</string>
     <string name="capture_tags_label">Tags</string>
     <string name="capture_tag_input_hint">Tag name</string>
     <string name="capture_add_tag">Add tag</string>
@@ -179,9 +180,6 @@
     <string name="settings_title">Settings</string>
     <string name="settings_section_language">Language</string>
     <string name="lang_system">System default</string>
-    <string name="lang_en">English</string>
-    <string name="lang_bg">Bulgarian</string>
-    <string name="lang_ru">Russian</string>
     <string name="settings_section_quiet_hours">Quiet hours</string>
     <string name="settings_quiet_hours_start_value">Start: %1$s</string>
     <string name="settings_quiet_hours_end_value">End: %1$s</string>
@@ -191,6 +189,21 @@
     <string name="settings_section_snooze">Snooze presets</string>
     <string name="settings_add_snooze_preset">Add preset (minutes)</string>
     <string name="settings_section_reminder_offsets">Default reminder lead times</string>
+
+    <!-- M6 part 1.5: tag management (D-41) -->
+    <string name="settings_section_tags">Tags</string>
+    <string name="settings_tags_empty">No tags yet</string>
+    <string name="settings_tags_delete_tag">Delete tag</string>
+    <string name="settings_tags_delete_confirm_title">Delete #%1$s?</string>
+    <string name="settings_tags_delete_confirm_message">This removes the tag from every task. This can\'t be undone.</string>
+    <string name="settings_tags_close">Close</string>
+    <plurals name="settings_tags_count">
+        <item quantity="one">%d tag</item>
+        <item quantity="few">%d tags</item>
+        <item quantity="many">%d tags</item>
+        <item quantity="other">%d tags</item>
+    </plurals>
+
     <string name="settings_section_backup">Backup</string>
     <string name="settings_auto_backup">Auto-backup</string>
     <string name="settings_auto_backup_subtitle">Daily backup to your chosen folder, keeps the last 7</string>

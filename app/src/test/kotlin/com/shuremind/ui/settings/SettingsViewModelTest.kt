@@ -1,11 +1,13 @@
 package com.shuremind.ui.settings
 
+import com.shuremind.data.entity.TagEntity
 import com.shuremind.data.repo.LanguageRepository
 import com.shuremind.testutil.FakeBackupFileWriter
 import com.shuremind.testutil.FakeBackupRepository
 import com.shuremind.testutil.FakeBackupSettingsRepository
 import com.shuremind.testutil.FakeImportRepository
 import com.shuremind.testutil.FakeSettingsRepository
+import com.shuremind.testutil.FakeTagRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -34,13 +36,17 @@ class SettingsViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(backupSettingsRepository: FakeBackupSettingsRepository) = SettingsViewModel(
+    private fun viewModel(
+        backupSettingsRepository: FakeBackupSettingsRepository,
+        tagRepository: FakeTagRepository = FakeTagRepository()
+    ) = SettingsViewModel(
         settingsRepository = FakeSettingsRepository(),
         languageRepository = LanguageRepository(),
         backupSettingsRepository = backupSettingsRepository,
         backupFileWriter = FakeBackupFileWriter(),
         backupRepository = FakeBackupRepository(),
         importRepository = FakeImportRepository(),
+        tagRepository = tagRepository,
         appVersion = "test"
     )
 
@@ -68,5 +74,20 @@ class SettingsViewModelTest {
         val current = backupSettingsRepository.settings.first()
         assertEquals("content://tree/abc", current.folderUri)
         assertFalse(current.autoBackupEnabled)
+    }
+
+    /** D-41: deleting a tag from Settings goes through the repository and drops out of the observed list. */
+    @Test
+    fun `deleteTag removes the tag from the observed tag list`() = runTest(dispatcher) {
+        val tagRepository = FakeTagRepository().apply { seedTag(TagEntity(id = "tag-shop", name = "shop", color = null)) }
+        val viewModel = viewModel(FakeBackupSettingsRepository(), tagRepository)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(listOf("shop"), viewModel.tags.value.map { it.name })
+
+        viewModel.deleteTag("tag-shop")
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(viewModel.tags.value.isEmpty())
     }
 }

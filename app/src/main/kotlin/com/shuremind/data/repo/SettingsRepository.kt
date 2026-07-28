@@ -21,8 +21,9 @@ data class AppSettings(
     val exactAlarmsOptIn: Boolean = false
 ) {
     companion object {
+        /** D-43: EVENT was empty (no default lead reminder) until a зъболекар-shaped EVENT fired only at due. */
         val DEFAULT_REMINDER_OFFSETS: Map<TaskType, List<String>> = mapOf(
-            TaskType.EVENT to emptyList(),
+            TaskType.EVENT to listOf("P1D", "PT2H"),
             TaskType.ANNIVERSARY to listOf("P14D", "P1D"),
             TaskType.DEADLINE to listOf("P14D", "P7D", "P1D")
         )
@@ -47,6 +48,15 @@ interface SettingsRepository {
     suspend fun setDefaultSnoozeDuration(duration: Duration)
 
     suspend fun setExactAlarmsOptIn(optIn: Boolean)
+
+    /**
+     * D-43: one-time correction for installs where EVENT's default_reminder_offsets was persisted as
+     * empty (either from the pre-D-43 code default, or a settings import/restore that wrote it back).
+     * Only [DataStoreSettingsRepository] can distinguish "never set" from "persisted empty" against
+     * real DataStore state, so it does the actual work; default no-op here keeps every fake/in-memory
+     * implementation (which has no such stale-persisted-value problem to correct) unaffected.
+     */
+    suspend fun migrateEventDefaultOffsetsIfNeeded() {}
 }
 
 /** Bridges DataStore-backed settings to the engine's Room/Android-free FireSettings. */

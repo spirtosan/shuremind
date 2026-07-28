@@ -70,7 +70,8 @@ class AppContainer(context: Context) {
         RoomCompletionRepository(database, database.completionLogDao(), database.taskDao(), scheduleChangeNotifier)
     val meterRepository: MeterRepository = MeterRepository(database.meterReadingDao())
     val tagRepository: TagRepository = RoomTagRepository(database.tagDao(), database.taskTagDao(), RoomTransactionRunner(database))
-    val reminderRuleRepository: ReminderRuleRepository = RoomReminderRuleRepository(database.reminderRuleDao())
+    val reminderRuleRepository: ReminderRuleRepository =
+        RoomReminderRuleRepository(database.reminderRuleDao(), scheduleChangeNotifier)
     val windowConversionRepository: WindowConversionRepository = RoomWindowConversionRepository(
         database, database.taskDao(), database.reminderRuleDao(), scheduleChangeNotifier
     )

@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.shuremind.engine.EngineTuning
 import com.shuremind.engine.TaskType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.Duration
 import java.time.LocalTime
@@ -64,6 +65,17 @@ internal class DataStoreSettingsRepository(
         scheduleChangeNotifier.onScheduleChanged()
     }
 
+    override suspend fun migrateEventDefaultOffsetsIfNeeded() {
+        if (dataStore.data.first()[EVENT_OFFSETS_D43_MIGRATED] == true) {
+            return
+        }
+        val currentEventOffsets = settings.first().defaultReminderOffsets[TaskType.EVENT].orEmpty()
+        if (currentEventOffsets.isEmpty()) {
+            setDefaultReminderOffsets(TaskType.EVENT, AppSettings.DEFAULT_REMINDER_OFFSETS.getValue(TaskType.EVENT))
+        }
+        dataStore.edit { it[EVENT_OFFSETS_D43_MIGRATED] = true }
+    }
+
     private companion object {
         val QUIET_HOURS_START = stringPreferencesKey("quiet_hours_start")
         val QUIET_HOURS_END = stringPreferencesKey("quiet_hours_end")
@@ -72,6 +84,7 @@ internal class DataStoreSettingsRepository(
         val SNOOZE_PRESETS = stringPreferencesKey("snooze_presets_minutes")
         val DEFAULT_SNOOZE_DURATION_MINUTES = stringPreferencesKey("default_snooze_duration_minutes")
         val EXACT_ALARMS_OPT_IN = booleanPreferencesKey("exact_alarms_opt_in")
+        val EVENT_OFFSETS_D43_MIGRATED = booleanPreferencesKey("event_offsets_d43_migrated")
 
         fun reminderOffsetsKey(type: TaskType) = stringPreferencesKey("default_reminder_offsets_${type.name}")
 

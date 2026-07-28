@@ -4,7 +4,10 @@ import com.shuremind.data.dao.ReminderRuleDao
 import com.shuremind.data.entity.ReminderRuleEntity
 import java.util.UUID
 
-internal class RoomReminderRuleRepository(private val reminderRuleDao: ReminderRuleDao) : ReminderRuleRepository {
+internal class RoomReminderRuleRepository(
+    private val reminderRuleDao: ReminderRuleDao,
+    private val scheduleChangeNotifier: ScheduleChangeNotifier = ScheduleChangeNotifier.NONE
+) : ReminderRuleRepository {
 
     override suspend fun getForTask(taskId: String): List<ReminderRuleEntity> = reminderRuleDao.getForTask(taskId)
 
@@ -13,5 +16,6 @@ internal class RoomReminderRuleRepository(private val reminderRuleDao: ReminderR
         offsetIsos.forEach { offset ->
             reminderRuleDao.upsert(ReminderRuleEntity(id = UUID.randomUUID().toString(), taskId = taskId, offsetIso = offset))
         }
+        scheduleChangeNotifier.onScheduleChanged()
     }
 }

@@ -47,6 +47,13 @@ class ShuRemindApplication : Application() {
                 Log.e("ShuRemindApplication", "Auto-backup scheduling reconciliation failed", e)
             }
         }
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                container.settingsRepository.migrateEventDefaultOffsetsIfNeeded()
+            } catch (e: Exception) {
+                Log.e("ShuRemindApplication", "D-43 EVENT default offsets migration failed", e)
+            }
+        }
     }
 
     /**

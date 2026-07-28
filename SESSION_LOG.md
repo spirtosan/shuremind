@@ -7,8 +7,8 @@ _Project memory across chat sessions._
 3. **End of every session:** the model proposes (a) a new Session entry for this file, (b) any new D-xx lines, (c) PROJECT.md changes if scope moved — then, per D-20, the updates are applied via a Claude Code prompt, never pasted by hand.
 
 ## Current state
-- Phase: v1 installed on both phones → M6 UX pass (part 1 + part 1.5 done, part 2 = translation review pending) → M7 (per-task alarm mode) implemented, on-device verification pending.
-- Next concrete step: on-device alarm-mode verification (checklist in Session 10) + translation review table + a week of real-life use.
+- Phase: v1 installed on both phones → M6 UX pass (part 1 + part 1.5 done, part 2 = translation review pending) → M7 (per-task alarm mode) implemented, on-device verification pending → D-43 hotfix landed (EVENT default reminder offsets = P1D+PT2H, quick-capture now writes them, ReminderRuleRepository writes now re-arm immediately), on-device verification pending.
+- Next concrete step: on-device confirm a quick-captured EVENT gets its P1D/PT2H rules and the D-43 DataStore migration applies on both phones' live state (esp. wife's Android 10 phone, which only migrates the next time she opens the app) + M7 on-device alarm-mode verification (checklist in Session 10) + translation review table + a week of real-life use.
 - Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
 - Open questions: real launcher icon design (placeholder monogram ships in v1, → D-35). Wife's phone confirmed Android 10 (M6 smoke test).
 
@@ -249,3 +249,66 @@ _Project memory across chat sessions._
   DB on both phones; import of a pre-M7 backup file.
 - Next: on-device alarm-mode verification (checklist above) + translation
   review table (M6 part 2) + a week of real-life use.
+
+## Session 11 — 2026-07-28 (Claude Code, D-43 hotfix)
+- Root-caused the earlier diagnosis (EVENT "зъболекар" firing only at
+  due, zero ReminderRules): the task was created via quick-capture,
+  whose save path never wrote any ReminderRule at all (no field, no
+  repository call), and EVENT's default_reminder_offsets was empty
+  ([]) unlike ANNIVERSARY/DEADLINE — so even opening the detail screen
+  afterward wouldn't have suggested a lead reminder. Separately,
+  RoomReminderRuleRepository never fired ScheduleChangeNotifier on
+  writes (unlike every RoomTaskRepository write), so even a rule added
+  by hand wouldn't re-arm the alarm until an unrelated trigger (reopen/
+  boot/housekeeping).
+- Ratified D-43: EVENT default_reminder_offsets = [P1D, PT2H].
+  MainViewModel.saveCapture() now writes the type's default offsets via
+  ReminderRuleRepository right after task creation, mirroring
+  TaskDetailViewModel's existing load()-time default-population —
+  gated to FireInstantEngine.LEAD_REMINDER_TYPES (EVENT/ANNIVERSARY/
+  DEADLINE), so SOMEDAY and other types write nothing. CaptureBar
+  itself is unchanged — no reminder picker added, keeping ≤2-tap
+  capture (D-02).
+- RoomReminderRuleRepository.setForTask() now takes an injected
+  ScheduleChangeNotifier (wired in AppContainer, same forwarding-hook
+  pattern as every other repo) and fires it after writing, in parity
+  with RoomTaskRepository. Confirmed by inspection that this makes
+  TaskDetailViewModel.save()'s existing ordering (task update before
+  rule write) self-correct: the task update's notifier call still runs
+  RecomputeAndRearm against the stale rule set first, but the rule
+  write's own notifier call immediately triggers a second pass that
+  reads the final state — no reordering needed.
+- 1a wrinkle: default_reminder_offsets is read with "DataStore key
+  (if ever written) wins over the code default" semantics, and
+  RoomImportRepository.restoreSettings() persists every type's offsets
+  unconditionally on any import/restore — so a device that has ever
+  restored a backup would have EVENT's old empty default written
+  explicitly to DataStore, immune to just changing the code constant.
+  Because the release build is non-debuggable, DataStore ground truth
+  on the two live phones couldn't be inspected directly (run-as
+  refused: "package not debuggable"), so both paths were covered
+  defensively: the code constant changed AND a one-time,
+  DataStore-marker-guarded correction
+  (DataStoreSettingsRepository.migrateEventDefaultOffsetsIfNeeded(),
+  run once at app startup) upgrades EVENT from empty to [P1D, PT2H]
+  only if the stored value is still exactly empty — a no-op if the
+  code-default path already covered it, load-bearing if not, and never
+  re-running afterward so a user's later explicit choice (including
+  choosing empty again) is never overwritten.
+- New tests: MainViewModelTest (+4: EVENT capture writes [P1D, PT2H],
+  ANNIVERSARY capture writes its own [P14D, P1D] not EVENT's, SOMEDAY
+  capture writes no rules and doesn't throw, a no-due-date EVENT
+  capture still writes defaults without crashing);
+  RoomReminderRuleRepositoryTest, new file (+3: setForTask fires the
+  notifier once, replacing an existing rule set fires it again,
+  omitting the notifier doesn't crash) — same fake-DAO-no-real-DB
+  pattern as D-41's RoomTagRepositoryTest.
+- Result: 206 tests green (199 + 7 new), assembleDebug + assembleRelease
+  clean, lint clean bar the known local.properties issue.
+- Not done this session: on-device verification that a freshly
+  quick-captured EVENT actually gets P1D/PT2H rules and re-arms
+  immediately, and that the D-43 migration applies cleanly on both live
+  phones' existing DataStore state (the exact unknown this session
+  couldn't resolve from a non-debuggable build). Carrying forward,
+  unchanged: M6 part 2 translation review, a week of real-life use, and
+  M7's on-device alarm-mode checklist (Session 10).

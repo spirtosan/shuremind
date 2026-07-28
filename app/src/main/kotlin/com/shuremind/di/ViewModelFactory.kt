@@ -18,6 +18,7 @@ class ViewModelFactory(private val container: AppContainer) : ViewModelProvider.
                 taskRepository = container.taskRepository,
                 completionRepository = container.completionRepository,
                 tagRepository = container.tagRepository,
+                reminderRuleRepository = container.reminderRuleRepository,
                 settingsRepository = container.settingsRepository,
                 meterRepository = container.meterRepository
             ) as T

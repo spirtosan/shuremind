@@ -4,6 +4,7 @@ import com.shuremind.data.entity.MeterReadingEntity
 import com.shuremind.engine.TaskStatus
 import com.shuremind.engine.TaskType
 import com.shuremind.testutil.FakeCompletionRepository
+import com.shuremind.testutil.FakeReminderRuleRepository
 import com.shuremind.testutil.FakeSettingsRepository
 import com.shuremind.testutil.FakeTagRepository
 import com.shuremind.testutil.FakeTaskRepository
@@ -45,12 +46,15 @@ class MainViewModelTest {
         tasks: List<com.shuremind.data.entity.TaskEntity> = emptyList(),
         taskRepository: FakeTaskRepository = FakeTaskRepository(tasks),
         tagRepository: FakeTagRepository = FakeTagRepository(),
+        reminderRuleRepository: FakeReminderRuleRepository = FakeReminderRuleRepository(),
+        settingsRepository: FakeSettingsRepository = FakeSettingsRepository(),
         meterReadings: List<MeterReadingEntity> = emptyList()
     ) = MainViewModel(
         taskRepository = taskRepository,
         completionRepository = FakeCompletionRepository(),
         tagRepository = tagRepository,
-        settingsRepository = FakeSettingsRepository(),
+        reminderRuleRepository = reminderRuleRepository,
+        settingsRepository = settingsRepository,
         meterRepository = fakeMeterRepository(meterReadings),
         zone = zone,
         nowProvider = { now }
@@ -230,6 +234,72 @@ class MainViewModelTest {
         // Snooze must not touch status or next_fire_at (alarms are M3).
         assertEquals(TaskStatus.ACTIVE, updated.status)
         assertEquals(now, updated.nextFireAt)
+    }
+
+    // --- D-43: quick-capture applies per-type default reminder offsets ---
+
+    @Test
+    fun `capturing a new EVENT writes its default reminder offsets`() = runTest(dispatcher) {
+        val taskRepository = FakeTaskRepository()
+        val reminderRuleRepository = FakeReminderRuleRepository()
+        val vm = viewModel(taskRepository = taskRepository, reminderRuleRepository = reminderRuleRepository)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.setCaptureTitle("зъболекар")
+        vm.saveCapture()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val saved = taskRepository.tasks.single()
+        assertEquals(TaskType.EVENT, saved.type)
+        assertEquals(listOf("P1D", "PT2H"), reminderRuleRepository.getForTask(saved.id).map { it.offsetIso })
+    }
+
+    @Test
+    fun `capturing a new ANNIVERSARY writes its own type's defaults, not EVENT's`() = runTest(dispatcher) {
+        val taskRepository = FakeTaskRepository()
+        val reminderRuleRepository = FakeReminderRuleRepository()
+        val vm = viewModel(taskRepository = taskRepository, reminderRuleRepository = reminderRuleRepository)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.setCaptureTitle("Anniversary")
+        vm.setCaptureType(TaskType.ANNIVERSARY)
+        vm.saveCapture()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val saved = taskRepository.tasks.single()
+        assertEquals(listOf("P14D", "P1D"), reminderRuleRepository.getForTask(saved.id).map { it.offsetIso })
+    }
+
+    @Test
+    fun `capturing a SOMEDAY writes no reminder rules and does not throw`() = runTest(dispatcher) {
+        val taskRepository = FakeTaskRepository()
+        val reminderRuleRepository = FakeReminderRuleRepository()
+        val vm = viewModel(taskRepository = taskRepository, reminderRuleRepository = reminderRuleRepository)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.setCaptureTitle("Someday maybe")
+        vm.setCaptureType(TaskType.SOMEDAY)
+        vm.saveCapture()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val saved = taskRepository.tasks.single()
+        assertTrue(reminderRuleRepository.getForTask(saved.id).isEmpty())
+    }
+
+    @Test
+    fun `capturing an EVENT with no due date still writes default offsets without crashing`() = runTest(dispatcher) {
+        val taskRepository = FakeTaskRepository()
+        val reminderRuleRepository = FakeReminderRuleRepository()
+        val vm = viewModel(taskRepository = taskRepository, reminderRuleRepository = reminderRuleRepository)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.setCaptureTitle("No due date yet")
+        vm.saveCapture()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val saved = taskRepository.tasks.single()
+        assertNull(saved.dueLocalDate)
+        assertEquals(listOf("P1D", "PT2H"), reminderRuleRepository.getForTask(saved.id).map { it.offsetIso })
     }
 
     // --- D-27: meter-due (OR-logic) surfacing ---

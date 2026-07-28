@@ -132,3 +132,4 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
   pattern kept — the arming call branches to setAlarmClock whenever the
   globally nearest instant belongs to an alarm-mode occurrence. Toggle
   available on all types except SOMEDAY. (2026-07-09)
+- **D-43** EVENT default reminder offsets = [P1D, PT2H] (was empty). Quick-capture now applies per-type default offsets on save (MainViewModel.saveCapture writes them via ReminderRuleRepository, matching TaskDetailViewModel); capture bar stays reminder-picker-free (≤2-tap capture, D-02). RoomReminderRuleRepository now fires ScheduleChangeNotifier on writes — it previously never did, so reminder edits only re-armed on reopen/boot/housekeeping. Root-caused from EVENT "зъболекар" firing only at due (zero ReminderRules: created via quick-capture, whose save path wrote none, and EVENT's default was empty). (2026-07-28)

@@ -6,10 +6,12 @@ import com.shuremind.data.entity.TaskEntity
 import com.shuremind.data.repo.CompletionRepository
 import com.shuremind.data.repo.MeterRepository
 import com.shuremind.data.repo.NextFireAtCalculator
+import com.shuremind.data.repo.ReminderRuleRepository
 import com.shuremind.data.repo.SettingsRepository
 import com.shuremind.data.repo.TagRepository
 import com.shuremind.data.repo.TaskRepository
 import com.shuremind.engine.CompletionAction
+import com.shuremind.engine.FireInstantEngine
 import com.shuremind.engine.MeterEngine
 import com.shuremind.engine.PriorityEngine
 import com.shuremind.engine.TaskStatus
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -29,6 +32,7 @@ class MainViewModel(
     private val taskRepository: TaskRepository,
     private val completionRepository: CompletionRepository,
     private val tagRepository: TagRepository,
+    private val reminderRuleRepository: ReminderRuleRepository,
     private val settingsRepository: SettingsRepository,
     private val meterRepository: MeterRepository,
     private val zone: ZoneId = ZoneId.systemDefault(),
@@ -212,6 +216,12 @@ class MainViewModel(
             if (state.tags.isNotEmpty()) {
                 val tagIds = state.tags.map { tagRepository.getOrCreate(it).id }.toSet()
                 tagRepository.setTagsForTask(id, tagIds)
+            }
+            // D-43: mirror TaskDetailViewModel's default-offset population so a quick-captured
+            // EVENT/ANNIVERSARY/DEADLINE gets its type's lead-time reminders, not zero.
+            if (state.type in FireInstantEngine.LEAD_REMINDER_TYPES) {
+                val defaultOffsets = settingsRepository.settings.first().defaultReminderOffsets[state.type].orEmpty()
+                reminderRuleRepository.setForTask(id, defaultOffsets)
             }
             _capture.value = QuickCaptureState()
         }

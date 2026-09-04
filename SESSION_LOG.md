@@ -8,15 +8,15 @@ _Project memory across chat sessions._
 
 ## Current state
 - Phase: v1 installed on both phones → M6 UX pass (part 1 + part 1.5 done, part 2 = translation review pending) → M7 (per-task alarm mode) implemented, on-device verification pending → D-43 hotfix landed (EVENT default reminder offsets = P1D+PT2H, quick-capture now writes them, ReminderRuleRepository writes now re-arm immediately), on-device verification pending.
-- Next concrete step: on-device confirm a quick-captured EVENT gets its P1D/PT2H rules and the D-43 DataStore migration applies on both phones' live state (esp. wife's Android 10 phone, which only migrates the next time she opens the app) + M7 on-device alarm-mode verification (checklist in Session 10) + translation review table + a week of real-life use.
+- Next concrete step: on-device confirm a quick-captured EVENT gets its P1D/PT2H rules and the D-43 DataStore migration applies on both phones' live state (esp. secondary user's Android 10 phone, which only migrates the next time they open the app) + M7 on-device alarm-mode verification (checklist in Session 10) + translation review table + a week of real-life use.
 - Watch item from M2: ViewModels are activity-scoped singletons incl. TaskDetailViewModel reused across tasks via load(taskId) — still unresolved, revisit if a stale-data flash appears when switching tasks.
-- Open questions: real launcher icon design (placeholder monogram ships in v1, → D-35). Wife's phone confirmed Android 10 (M6 smoke test).
+- Open questions: real launcher icon design (placeholder monogram ships in v1, → D-35). Secondary user's phone confirmed Android 10 (M6 smoke test).
 
 ## Session 1 — 2026-07-04 (Fable, planning)
 - Reviewed Gemini's architecture plan; kept offline-first/Room/WorkManager core, added recurrence as day-1 concern, time-growing priority, deferred geofencing, flagged Android 13/14 permission reality.
 - Audited fshu-next KEEPALIVE_AUDIT.md: verdict — persistent-connection machinery not applicable; reuse alarm branching (Section E), boot re-arm (Layer 8), onboarding flow (Section G), GAPS as docs (→ D-17).
 - Collected real-life requirements (dentist, shower tray, car maintenance, taxes, moving-window declaration, meds intake+stock, flowers, birthdays, routines, timers, #shop items) → collapsed into the 8-behavior taxonomy (→ D-02, PROJECT.md).
-- Added commonly-forgotten items: missed-alarm recovery, notification actions, quiet hours, completion log, recurring-edit semantics, DST, wife's-phone reality.
+- Added commonly-forgotten items: missed-alarm recovery, notification actions, quiet hours, completion log, recurring-edit semantics, DST, secondary user's-phone reality.
 - Scope frozen: v1 offline with import/export + auto-backup; sync/budget/dependencies/geofencing deferred.
 - Produced: PROJECT.md, DATA_MODEL.md, DECISIONS.md (D-01…D-17), CLAUDE.md, EXTRACT_FSHU_PATTERNS.md, this file.
 - Addendum 2026-07-04: fshu extraction done and reviewed (shuremind_patterns.md ✓).
@@ -125,13 +125,13 @@ _Project memory across chat sessions._
 - Result: 155 tests green, assembleDebug + assembleRelease clean, lint —
   the missing-launcher-icon warning is gone; the local.properties error
   remains the only known exception.
-- Next: user runs SMOKE_TEST.md on the moto g 60 (+ wife's phone when
+- Next: user runs SMOKE_TEST.md on the moto g 60 (+ secondary user's phone when
   its Android version is confirmed ≥8.0), then v1 install. Real icon
   whenever ready.
 
 ## Session 8 — 2026-07-06 (Claude Code, M6 part 1)
 - User completed the pending device smoke test on both phones (moto g 60 +
-  wife's phone, confirmed Android 10), release APK installed on both, no
+  secondary user's phone, confirmed Android 10), release APK installed on both, no
   functional failures — but the first real-use pass surfaced a real bug:
   reminder offsets were raw ISO-8601 text fields with no validation, so a
   bad string silently broke scheduling. That plus general UX intelligibility

@@ -13,7 +13,7 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
 - **D-10** Missed-alarm recovery is a first-class feature: overdue summary on boot/open/housekeeping. (2026-07-04)
 - **D-11** Import/export = versioned full-fidelity JSON (replace-all import in v1); daily auto-backup keeping last 7. Doubles as phone-migration path and future sync foundation. (2026-07-04)
 - **D-12** Quiet hours are global (default 22:00–08:00); deferred delivery after quiet end. Per-task override deferred. (2026-07-04)
-- **D-13** Wife's reminders run standalone on her phone in v1; export/import file is the sharing mechanism until sync. (2026-07-04)
+- **D-13** Secondary user's reminders run standalone on their phone in v1; export/import file is the sharing mechanism until sync. (2026-07-04)
 - **D-14** Budget planning deferred (v2+). v1 keeps only estimated_cost field + not_before date (covers "after salary"). (2026-07-04)
 - **D-15** Default currency EUR (Bulgaria post-2026 changeover), configurable. (2026-07-04)
 - **D-16** Stack: Kotlin/Compose/Room/DataStore/AlarmManager/WorkManager, minSdk 26 + desugaring, single :app module, no GMS/Firebase in v1, no new libraries without explicit approval. (2026-07-04)
@@ -61,7 +61,7 @@ _ADR-lite. Append-only; never rewrite history, add a superseding entry instead._
 - **D-31** Import is replace-all: wipe all Room tables and restore the D-30
   settings subset transactionally; delivery watermark is set to import
   time (prevents overdue-summary flood from imported history);
-  ui_language is NOT applied on import (D-13 — wife's phone keeps her
+  ui_language is NOT applied on import (D-13 — secondary user's phone keeps their
   language); confirmation dialog shows entity counts and warns the import
   replaces everything; before wiping, attempt a safety export to the
   backup folder if configured, else to app cacheDir (failure to write the

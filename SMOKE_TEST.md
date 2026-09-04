@@ -23,8 +23,8 @@ _One on-device pass before v1 install. Paper checklist — check each box as you
 - [ ] 3. Car oil (RECURRING/COMPLETION, 12mo + 10,000 km meter): due when either time or km threshold is crossed
 - [ ] 4. Property tax (DEADLINE, P14D/P7D/P1D): reminders fire on schedule with escalation near due
 - [ ] 5. Residence declaration (WINDOW → DEADLINE): monthly check reminders, converts cleanly once a date is entered
-- [ ] 6. Wife's meds intake (RECURRING/CALENDAR daily 08:00 + 20:00): both daily alarms fire
-- [ ] 7. Wife's meds stock (CONSUMABLE, stock 30 / dose 2 per day, lead 5 days): reminder lands ~10 days out
+- [ ] 6. Secondary user's meds intake (RECURRING/CALENDAR daily 08:00 + 20:00): both daily alarms fire
+- [ ] 7. Secondary user's meds stock (CONSUMABLE, stock 30 / dose 2 per day, lead 5 days): reminder lands ~10 days out
 - [ ] 8. Flowers (RECURRING/COMPLETION every 3 days): next occurrence is 3 days after marking done, not a fixed grid
 - [ ] 9. Birthday (ANNIVERSARY, P14D + P1D leads): both lead reminders fire yearly
 - [ ] 10. Washing machine (quick timer +2h): fires 2 hours after creation

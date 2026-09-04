@@ -96,7 +96,7 @@ class OccurrenceEngineTest {
 
     @Test
     fun `CONSUMABLE dispatches to the run-out engine`() {
-        // Acceptance test #7: wife's meds stock.
+        // Acceptance test #7: secondary user's meds stock.
         val schedule = TaskSchedule(
             type = TaskType.CONSUMABLE,
             stockQty = 30.0,

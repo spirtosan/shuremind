@@ -2,7 +2,7 @@
 _Last updated: 2026-07-04 (Planning session 1). This file is the single source of truth for scope. Upload it at the start of every planning/coding session._
 
 ## What & why
-Offline-first Android reminder app for one power user (+ wife's phone). Goal: **the app holds the memory, the user never has to.** Handles everything from "buy eggs" to "yearly tax declaration with a moving deadline." Server sync is a later version; v1 is fully offline with import/export.
+Offline-first Android reminder app for one power user (+ secondary user's phone). Goal: **the app holds the memory, the user never has to.** Handles everything from "buy eggs" to "yearly tax declaration with a moving deadline." Server sync is a later version; v1 is fully offline with import/export.
 
 Design context: user prefers zero-memory-burden UX (ADHD-informed defaults). Consequences: capture in ≤2 taps, persistent nagging is normal (not annoying), snooze available everywhere, weekly review resurfaces anything stale, missed alarms recover loudly.
 
@@ -15,7 +15,7 @@ Design context: user prefers zero-memory-burden UX (ADHD-informed defaults). Con
 | 4 | WINDOW | Deadline exists but date unknown → recurring "check" reminder; converts to DEADLINE when date learned | Residence declaration (office moves the date) |
 | 5 | NAG | Repeats every N hours until done; optional `not_before` date | Dentist (not before the 7th, then daily) |
 | 6 | RECURRING | Repeats; anchor = CALENDAR (fixed grid, e.g. daily meds 08:00/20:00) or COMPLETION (interval since last done, e.g. water flowers every 3 days) | Meds intake, flowers, cleaning, routines |
-| 7 | CONSUMABLE | Stock + daily dose → computed run-out date, remind N days before | Wife's medicine supply |
+| 7 | CONSUMABLE | Stock + daily dose → computed run-out date, remind N days before | Secondary user's medicine supply |
 | 8 | SOMEDAY | No date, no alarms; surfaces in weekly review | Broken shower tray |
 
 Extras: **quick timer** (UI shortcut creating an EVENT at now+X, e.g. washing machine) and **meter-based maintenance** (RECURRING task with km interval + meter readings; due when time OR km threshold crossed, e.g. car oil).
@@ -56,8 +56,8 @@ Kotlin 2.x, Jetpack Compose (Material 3), Room, DataStore (settings), AlarmManag
 3. Car oil: RECURRING anchor=COMPLETION, 12 months + meter "car" every 10,000 km, last-done unknown → user enters estimate; monthly km prompt; due when either threshold crossed.
 4. Property tax: DEADLINE with P14D/P7D/P1D reminders + escalation near due.
 5. Residence declaration: WINDOW, monthly check from September → converts to DEADLINE when office publishes date.
-6. Wife's meds intake (her phone): RECURRING CALENDAR daily at 08:00, 20:00.
-7. Wife's meds stock: CONSUMABLE stock=30, dose 2/day, lead 5 days → reminder ~10 days later.
+6. Secondary user's meds intake (their phone): RECURRING CALENDAR daily at 08:00, 20:00.
+7. Secondary user's meds stock: CONSUMABLE stock=30, dose 2/day, lead 5 days → reminder ~10 days later.
 8. Flowers: RECURRING COMPLETION every 3 days.
 9. Birthday: ANNIVERSARY, leads P14D (gift) + P1D.
 10. Washing machine: quick timer +2h.
